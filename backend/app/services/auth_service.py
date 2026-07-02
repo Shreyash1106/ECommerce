@@ -1,10 +1,18 @@
 from typing import Union
 from sqlalchemy.orm import Session
+import re
 import bcrypt as _bcrypt
 from fastapi import HTTPException, status
 
 from app.models.user import User
 from app.schemas.user import UserCreate
+
+PASSWORD_STRENGTH_REGEX = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$")
+
+
+def is_strong_password(password: str) -> bool:
+    """Return True when password meets required strength rules."""
+    return bool(PASSWORD_STRENGTH_REGEX.match(password))
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify plain password against hashed password."""

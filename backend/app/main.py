@@ -23,6 +23,10 @@ def run_migrations():
     ALLOWED_TABLES = {"users", "products", "orders", "inventory", "notifications"}
     missing_columns = [
         ("users", "is_active", "INTEGER NOT NULL DEFAULT 1"),
+        ("users", "notify_new_orders", "INTEGER NOT NULL DEFAULT 1"),
+        ("users", "notify_low_stock_alerts", "INTEGER NOT NULL DEFAULT 1"),
+        ("users", "notify_user_activity", "INTEGER NOT NULL DEFAULT 1"),
+        ("users", "notify_system_updates", "INTEGER NOT NULL DEFAULT 1"),
         ("orders", "status", "VARCHAR(50) NOT NULL DEFAULT 'Pending'"),
     ]
     inspector = inspect(engine)

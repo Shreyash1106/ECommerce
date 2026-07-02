@@ -10,6 +10,10 @@ class User(Base):
     email = Column(String(length=255), unique=True, index=True, nullable=False)
     password = Column(String(length=255), nullable=False)
     role = Column(String(50), default="customer", nullable=False)  # admin, vendor, customer
+    notify_new_orders = Column(Integer, default=1, nullable=False)
+    notify_low_stock_alerts = Column(Integer, default=1, nullable=False)
+    notify_user_activity = Column(Integer, default=1, nullable=False)
+    notify_system_updates = Column(Integer, default=1, nullable=False)
     is_verified = Column(Integer, default=0, nullable=False)
     is_admin = Column(Integer, default=0, nullable=False)
     is_active = Column(Integer, default=1, nullable=False)
