@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Float, DateTime, func, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Float, DateTime, func, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from app.database.base import Base
 
@@ -9,6 +9,9 @@ class Product(Base):
     name = Column(String(length=255), nullable=False)
     description = Column(Text)
     price = Column(Float, nullable=False)
+    brand = Column(String(length=255), nullable=True)
+    rating = Column(Float, nullable=True, default=0.0)
+    discount_percentage = Column(Float, nullable=True, default=0.0)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     image_url = Column(String(length=255), nullable=True)
