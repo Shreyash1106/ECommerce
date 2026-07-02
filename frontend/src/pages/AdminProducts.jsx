@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
-import { Plus, Search, Pencil, Trash2, LayoutGrid, List, Filter, ImageOff } from "lucide-react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import { Plus, Search, Pencil, Trash2, LayoutGrid, List, Filter, ImageOff, Heart, Eye, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import client from "../api/client";
 import Badge from "../components/ui/Badge";
 import Modal from "../components/ui/Modal";
@@ -10,7 +11,7 @@ import LoadingSpinner from "../components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 
 const STATUSES  = ["All", "In Stock", "Low Stock", "Out of Stock"];
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 10;
 const EMPTY_FORM = { name: "", price: "", category_id: "", description: "" };
 
 const stockStatus = (qty) => {
@@ -59,19 +60,38 @@ function ProductForm({ form, onChange, onSubmit, submitLabel, loading }) {
 export default function AdminProducts() {
   const [search, setSearch]             = useState("");
   const [statusFilter, setStatus]       = useState("All");
-  const [view, setView]                 = useState("table");
+  const [view, setView]                 = useState("grid");
   const [page, setPage]                 = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [sortBy, setSortBy] = useState("relevance");
   const [createOpen, setCreateOpen]     = useState(false);
   const [editTarget, setEditTarget]     = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [form, setForm]                 = useState(EMPTY_FORM);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  // slider state
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const slideRef = useRef(null);
 
   const { data: products = [], isLoading, isError } = useQuery({
     queryKey: ["adminProducts"],
     queryFn: () => client.get("/products").then((r) => r.data),
     retry: 1,
     staleTime: 1000 * 60 * 5,
+  });
+
+  const { data: banners = [] } = useQuery({
+    queryKey: ["banners"],
+    queryFn: () => client.get("/banners").then((r) => r.data),
+    retry: 1,
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => client.get("/categories").then((r) => r.data),
+    retry: 1,
   });
 
   const createMutation = useMutation({
@@ -97,10 +117,18 @@ export default function AdminProducts() {
     const status = stockStatus(qty);
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "All" || status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchCategory = !selectedCategory || (p.category && Number(p.category.id) === Number(selectedCategory));
+    return matchSearch && matchStatus && matchCategory;
   }), [products, search, statusFilter]);
 
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  useEffect(() => {
+    // auto-advance slider every 4 seconds
+    if (!banners || banners.length === 0) return;
+    const id = setInterval(() => setCurrentSlide((s) => (s + 1) % banners.length), 4000);
+    return () => clearInterval(id);
+  }, [banners]);
 
   const handleCreate = (e) => {
     e.preventDefault();
@@ -127,101 +155,130 @@ export default function AdminProducts() {
 
   return (
     <div className="page-container">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
           <h1 className="text-lg font-semibold text-white">Products</h1>
           <p className="text-xs text-gray-500 mt-0.5">{filtered.length} products total</p>
         </div>
-        <button onClick={() => { setForm(EMPTY_FORM); setCreateOpen(true); }} className="btn-primary">
-          <Plus size={15} /> Add Product
-        </button>
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1 max-w-xs">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-          <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="Search products…" className="input-field pl-9 h-9 text-sm w-full" />
-        </div>
-        <select value={statusFilter} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="input-field h-9 text-sm w-auto">
-          {STATUSES.map((s) => <option key={s}>{s}</option>)}
-        </select>
-        <div className="flex border border-gray-700 rounded-lg overflow-hidden">
-          <button onClick={() => setView("table")} className={`px-3 py-2 transition-colors ${view === "table" ? "bg-gray-700 text-white" : "text-gray-500 hover:text-gray-300"}`}><List size={15} /></button>
-          <button onClick={() => setView("grid")}  className={`px-3 py-2 transition-colors ${view === "grid"  ? "bg-gray-700 text-white" : "text-gray-500 hover:text-gray-300"}`}><LayoutGrid size={15} /></button>
-        </div>
-      </div>
-
-      {filtered.length === 0 ? (
-        <div className="section-card"><EmptyState title="No products found" description="Try adjusting your search or add a new product." icon={Filter} /></div>
-      ) : view === "table" ? (
-        <div className="section-card">
-          <div className="overflow-x-auto">
-            <table className="data-table w-full">
-              <thead>
-                <tr className="border-b border-gray-800">
-                  <th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-800">
-                {paginated.map((p) => {
-                  const qty = p.inventory?.quantity;
-                  const status = stockStatus(qty);
-                  return (
-                    <tr key={p.id}>
-                      <td>
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0">
-                            <ImageOff size={14} className="text-gray-600" />
-                          </div>
-                          <span className="font-medium text-gray-200 text-sm">{p.name}</span>
-                        </div>
-                      </td>
-                      <td><span className="text-xs text-gray-400">{p.category?.name || "—"}</span></td>
-                      <td className="font-semibold text-white">${Number(p.price).toFixed(2)}</td>
-                      <td>
-                        <span className={`text-xs font-medium ${qty === 0 ? "text-red-400" : qty < 20 ? "text-yellow-400" : "text-gray-300"}`}>
-                          {qty ?? "—"}
-                        </span>
-                      </td>
-                      <td><Badge status={status.toLowerCase()}>{status}</Badge></td>
-                      <td>
-                        <div className="flex items-center gap-1">
-                          <button onClick={() => openEdit(p)} className="p-1.5 rounded-md hover:bg-gray-700 text-gray-500 hover:text-indigo-400 transition-colors"><Pencil size={13} /></button>
-                          <button onClick={() => setDeleteTarget(p)} className="p-1.5 rounded-md hover:bg-gray-700 text-gray-500 hover:text-red-400 transition-colors"><Trash2 size={13} /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        <div className="flex items-center gap-3">
+          <div className="relative hidden sm:block">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+            <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              placeholder="Search products…" className="input-field pl-9 h-9 text-sm w-64" />
           </div>
-          <Pagination page={page} total={filtered.length} pageSize={PAGE_SIZE} onChange={setPage} />
+          <select value={statusFilter} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="input-field h-9 text-sm w-auto">
+            {STATUSES.map((s) => <option key={s}>{s}</option>)}
+          </select>
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="input-field h-9 text-sm w-auto">
+            <option value="relevance">Relevance</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+            <option value="rating">Top Rated</option>
+          </select>
+          <div>
+            <button onClick={() => { setForm(EMPTY_FORM); setCreateOpen(true); }} className="btn-primary">
+              <Plus size={15} /> Add Product
+            </button>
+          </div>
         </div>
+      </div>
+
+      {/* Banner slider */}
+      <div className="mb-6">
+        <div className="relative w-full overflow-hidden rounded-xl bg-gray-800">
+          <div ref={slideRef} className="flex transition-transform duration-700" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+            {(banners.length ? banners : [{ image_url: "https://via.placeholder.com/1200x380?text=No+Banners" }]).map((b, i) => (
+              <div key={i} className="w-full flex-shrink-0">
+                <img src={b.image_url || b.url || "https://via.placeholder.com/1200x380?text=No+Banners"} alt={b.title || `banner-${i}`} className="w-full h-44 sm:h-56 md:h-64 object-cover" />
+              </div>
+            ))}
+          </div>
+          {banners.length > 0 && (
+            <>
+              <button onClick={() => setCurrentSlide((s) => (s - 1 + banners.length) % banners.length)} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/40 rounded-full">
+                <ChevronLeft size={18} />
+              </button>
+              <button onClick={() => setCurrentSlide((s) => (s + 1) % banners.length)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/40 rounded-full">
+                <ChevronRight size={18} />
+              </button>
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2">
+                {banners.map((_, i) => (
+                  <button key={i} onClick={() => setCurrentSlide(i)} className={`w-2 h-2 rounded-full ${i === currentSlide ? "bg-white" : "bg-white/40"}`} />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Categories scroller */}
+      <div className="mb-6">
+        <div className="flex gap-3 overflow-x-auto py-2">
+          {(categories.length ? categories : [{ id: "all", name: "All" }]).map((c) => (
+            <button key={c.id} onClick={() => { setSelectedCategory(c.id === undefined ? null : c.id); setPage(1); }}
+              className={`flex-shrink-0 min-w-[110px] px-3 py-2 bg-gray-800 rounded-lg flex items-center gap-3 transition-shadow ${selectedCategory && Number(selectedCategory) === Number(c.id) ? "ring-2 ring-indigo-500" : "hover:shadow-lg"}`}>
+              <img src={c.image_url || c.icon || "https://via.placeholder.com/64?text=Cat"} alt={c.name} className="w-10 h-10 rounded-md object-cover" />
+              <div className="text-left">
+                <div className="text-sm font-medium text-gray-200">{c.name}</div>
+                <div className="text-xs text-gray-400">{c.product_count ? `${c.product_count} items` : ""}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Products grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+            <div key={i} className="section-card animate-pulse">
+              <div className="h-44 bg-gray-800 rounded-t-lg" />
+              <div className="p-4">
+                <div className="h-4 bg-gray-700 rounded w-3/4 mb-2" />
+                <div className="h-3 bg-gray-700 rounded w-1/2 mb-3" />
+                <div className="h-8 bg-gray-700 rounded w-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="section-card"><EmptyState title="No products found" description="Try adjusting your search or add a new product." icon={Filter} /></div>
       ) : (
         <>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {paginated.map((p) => {
               const qty = p.inventory?.quantity;
               const status = stockStatus(qty);
+              const img = p.images?.[0]?.url || p.image_url || p.thumbnail_url || "https://via.placeholder.com/400x300?text=No+Image";
+              const discount = p.discount_percent || p.discount || 0;
+              const rating = p.rating || p.avg_rating || 0;
               return (
-                <div key={p.id} className="section-card hover:border-gray-700 transition-colors">
-                  <div className="h-40 bg-gray-800 flex items-center justify-center rounded-t-xl">
-                    <ImageOff size={32} className="text-gray-600" />
+                <div key={p.id} className="bg-gray-850 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
+                  <div className="relative h-44 bg-gray-800">
+                    <img src={img} alt={p.name} className="w-full h-full object-cover" />
+                    <button className="absolute top-2 right-2 p-2 bg-black/30 rounded-full text-white hover:bg-black/50">
+                      <Heart size={16} />
+                    </button>
+                    {discount > 0 && (
+                      <div className="absolute left-2 top-2 bg-red-600 text-white text-xs px-2 py-1 rounded">{discount}% OFF</div>
+                    )}
                   </div>
-                  <div className="p-4">
-                    <div className="flex items-start justify-between mb-1">
-                      <h3 className="text-sm font-medium text-gray-200 leading-snug flex-1 mr-2">{p.name}</h3>
-                      <Badge status={status.toLowerCase()}>{status}</Badge>
+                  <div className="p-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="text-sm font-semibold text-gray-200 truncate">{p.name}</h3>
+                      <div className="flex items-center gap-1 text-yellow-400 text-xs"><Star size={14} /> <span className="text-xs">{rating || "—"}</span></div>
                     </div>
-                    <p className="text-xs text-gray-500 mb-2">{p.category?.name || "—"}</p>
+                    <p className="text-xs text-gray-400 mb-2 truncate">{p.category?.name || "—"}</p>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-base font-bold text-white">${Number(p.price).toFixed(2)}</span>
-                      <span className="text-xs text-gray-500">{qty ?? 0} left</span>
+                      <div>
+                        <div className="text-base font-bold text-white">${Number(p.price).toFixed(2)}</div>
+                        {p.compare_at_price && <div className="text-xs text-gray-400 line-through">${Number(p.compare_at_price).toFixed(2)}</div>}
+                      </div>
+                      <div className="text-xs text-gray-400">{qty ?? 0} left</div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => openEdit(p)} className="flex-1 btn-secondary text-xs py-1.5 justify-center"><Pencil size={12} /> Edit</button>
+                      <button onClick={() => navigate(`/products/${p.id}`)} className="flex-1 btn-secondary text-xs py-1.5 justify-center"><Eye size={12} /> View</button>
+                      <button onClick={() => openEdit(p)} className="flex-1 btn-outline text-xs py-1.5 justify-center"><Pencil size={12} /> Edit</button>
                       <button onClick={() => setDeleteTarget(p)} className="btn-danger text-xs py-1.5 px-2.5"><Trash2 size={12} /></button>
                     </div>
                   </div>
@@ -229,7 +286,7 @@ export default function AdminProducts() {
               );
             })}
           </div>
-          <div className="section-card">
+          <div className="section-card mt-4">
             <Pagination page={page} total={filtered.length} pageSize={PAGE_SIZE} onChange={setPage} />
           </div>
         </>

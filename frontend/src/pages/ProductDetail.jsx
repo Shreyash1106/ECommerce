@@ -5,6 +5,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import client from "../api/client";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Badge from "../components/ui/Badge";
+import AppImage from "../components/ui/AppImage";
 import toast from "react-hot-toast";
 
 export default function ProductDetail() {
@@ -55,10 +56,10 @@ export default function ProductDetail() {
       <div className="section-card overflow-hidden">
         <div className="flex flex-col sm:flex-row gap-6 p-6">
           {/* Image placeholder */}
-          <div className="w-full sm:w-48 h-48 bg-gray-800 rounded-xl flex items-center justify-center flex-shrink-0">
+          <div className="w-full sm:w-48 h-48 bg-gray-800 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
             {product.image_url
-              ? <img src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-xl" />
-              : <Package size={40} className="text-gray-600" />
+              ? <AppImage src={product.image_url} alt={product.name} variant="product" className="w-full h-full object-cover rounded-xl" />
+              : <AppImage src={null} alt={product.name} variant="product" className="w-full h-full object-cover rounded-xl" />
             }
           </div>
 

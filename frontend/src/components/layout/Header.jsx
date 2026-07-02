@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Bell, Search, LogOut, User, ChevronDown, Settings } from "lucide-react";
+import { Bell, LogOut, User, ChevronDown, Settings } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useStore } from "../../store/useStore";
 import { useQuery } from "@tanstack/react-query";
@@ -27,8 +27,7 @@ export default function Header() {
   const { unreadCount, setUnreadCount } = useStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const [dropOpen, setDropOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [dropOpen, setDropOpen] = React.useState(false);
   const dropRef = useRef(null);
 
   useQuery({
@@ -52,6 +51,7 @@ export default function Header() {
   if (isAuthPage) return null;
 
   const title = PAGE_TITLES[location.pathname] || "CommerceOS";
+  const hideSearch = location.pathname === "/settings";
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "U";
@@ -66,18 +66,6 @@ export default function Header() {
       <h1 className="text-sm font-semibold text-white">{title}</h1>
 
       <div className="flex items-center gap-2">
-        {/* Search */}
-        <div className="relative hidden md:block">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && search.trim()) navigate(`/search?q=${search.trim()}`); }}
-            placeholder="Search…"
-            className="bg-gray-800 border border-gray-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-48 transition-all"
-          />
-        </div>
-
         {/* Notifications bell */}
         <button
           onClick={() => navigate("/admin/notifications")}

@@ -5,6 +5,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Link } from "react-router-dom";
 import client from "../api/client";
 import StatCard from "../components/ui/StatCard";
+import { useNavigate } from "react-router-dom";
 import Badge from "../components/ui/Badge";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 
@@ -44,6 +45,8 @@ export default function VendorDashboard() {
     <div className="flex items-center justify-center h-64"><LoadingSpinner size="lg" /></div>
   );
 
+  const navigate = useNavigate();
+
   const recentOrders = (Array.isArray(ordersData) ? ordersData : []).slice(0, 4);
   const topProducts  = (Array.isArray(productsData) ? productsData : []).slice(0, 3);
 
@@ -58,6 +61,7 @@ export default function VendorDashboard() {
           color="indigo" 
           trend="up" 
           trendValue={analytics?.revenue_trend ?? 0}
+          onClick={() => navigate('/vendor/analytics')}
         />
         <StatCard 
           title="Total Orders" 
@@ -66,6 +70,7 @@ export default function VendorDashboard() {
           color="blue" 
           trend="up" 
           trendValue={analytics?.orders_trend ?? 0}
+          onClick={() => navigate('/vendor/orders')}
         />
         <StatCard 
           title="Products" 
@@ -74,6 +79,7 @@ export default function VendorDashboard() {
           color="purple" 
           trend="up" 
           trendValue={analytics?.products_trend ?? 0}
+          onClick={() => navigate('/vendor/products')}
         />
         <StatCard 
           title="New Customers" 

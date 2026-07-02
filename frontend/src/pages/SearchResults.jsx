@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import client from "../api/client";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import EmptyState from "../components/ui/EmptyState";
+import AppImage from "../components/ui/AppImage";
 
 export default function SearchResults() {
   const [params] = useSearchParams();
@@ -45,10 +46,10 @@ export default function SearchResults() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {results.map((p) => (
             <Link key={p.id} to={`/product/${p.id}`} className="section-card hover:border-gray-700 transition-colors block">
-              <div className="h-36 bg-gray-800 flex items-center justify-center rounded-t-xl">
+              <div className="h-36 bg-gray-800 flex items-center justify-center rounded-t-xl overflow-hidden">
                 {p.image_url
-                  ? <img src={p.image_url} alt={p.name} className="w-full h-full object-cover rounded-t-xl" />
-                  : <Package size={28} className="text-gray-600" />
+                  ? <AppImage src={p.image_url} alt={p.name} variant="product" className="w-full h-full object-cover rounded-t-xl" />
+                  : <AppImage src={null} alt={p.name} variant="product" className="w-full h-full object-cover rounded-t-xl" />
                 }
               </div>
               <div className="p-4">

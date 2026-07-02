@@ -1,7 +1,7 @@
 import React from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
-export default function StatCard({ title, value, icon: Icon, trend, trendValue, color = "indigo" }) {
+export default function StatCard({ title, value, icon: Icon, trend, trendValue, color = "indigo", onClick }) {
   const colorMap = {
     indigo: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
     blue: "bg-blue-500/10 text-blue-400 border-blue-500/20",
@@ -12,7 +12,13 @@ export default function StatCard({ title, value, icon: Icon, trend, trendValue, 
   };
   const up = trend === "up";
   return (
-    <div className="stat-card">
+    <div
+      className={`stat-card ${onClick ? 'cursor-pointer hover:shadow-lg transition-shadow' : ''}`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(e); } } : undefined}
+    >
       <div className="flex items-start justify-between mb-3">
         <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">{title}</p>
         {Icon && (

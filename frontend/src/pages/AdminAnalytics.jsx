@@ -4,6 +4,7 @@ import { TrendingUp, DollarSign, ShoppingCart, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import client from "../api/client";
 import StatCard from "../components/ui/StatCard";
+import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import EmptyState from "../components/ui/EmptyState";
 
@@ -32,6 +33,8 @@ export default function AdminAnalytics() {
     queryFn: () => client.get("/analytics/dashboard").then((r) => r.data),
     retry: 1,
   });
+
+  const navigate = useNavigate();
 
   const { data: revenueData, isLoading: l2 } = useQuery({
     queryKey: ["analyticsRevenue"],
@@ -94,9 +97,9 @@ export default function AdminAnalytics() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Revenue"    value={`$${Number(dashboard?.total_revenue || 0).toLocaleString()}`} icon={DollarSign}  color="indigo" trend={dashboard?.revenue_trend >= 0 ? "up" : "down"} trendValue={Math.abs(dashboard?.revenue_trend || 0)} />
-        <StatCard title="Total Orders"     value={Number(dashboard?.total_orders   || 0).toLocaleString()}       icon={ShoppingCart} color="blue"   trend={dashboard?.orders_trend  >= 0 ? "up" : "down"} trendValue={Math.abs(dashboard?.orders_trend  || 0)} />
-        <StatCard title="Total Users"      value={Number(dashboard?.total_users    || 0).toLocaleString()}       icon={Users}        color="green"  trend={dashboard?.users_trend   >= 0 ? "up" : "down"} trendValue={Math.abs(dashboard?.users_trend   || 0)} />
+        <StatCard title="Total Revenue"    value={`$${Number(dashboard?.total_revenue || 0).toLocaleString()}`} icon={DollarSign}  color="indigo" trend={dashboard?.revenue_trend >= 0 ? "up" : "down"} trendValue={Math.abs(dashboard?.revenue_trend || 0)} onClick={() => navigate('/admin/analytics')} />
+        <StatCard title="Total Orders"     value={Number(dashboard?.total_orders   || 0).toLocaleString()}       icon={ShoppingCart} color="blue"   trend={dashboard?.orders_trend  >= 0 ? "up" : "down"} trendValue={Math.abs(dashboard?.orders_trend  || 0)} onClick={() => navigate('/admin/orders')} />
+        <StatCard title="Total Users"      value={Number(dashboard?.total_users    || 0).toLocaleString()}       icon={Users}        color="green"  trend={dashboard?.users_trend   >= 0 ? "up" : "down"} trendValue={Math.abs(dashboard?.users_trend   || 0)} onClick={() => navigate('/admin/users')} />
         <StatCard title="Avg. Order Value" value={`$${avgOrder.toFixed(2)}`}                                     icon={TrendingUp}   color="purple" trend="up" trendValue={0} />
       </div>
 

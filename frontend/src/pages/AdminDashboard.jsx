@@ -5,6 +5,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Link } from "react-router-dom";
 import client from "../api/client";
 import StatCard from "../components/ui/StatCard";
+import { useNavigate } from "react-router-dom";
 import Badge from "../components/ui/Badge";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import EmptyState from "../components/ui/EmptyState";
@@ -31,6 +32,8 @@ export default function AdminDashboard() {
     staleTime: 1000 * 60 * 5,
   });
 
+  const navigate = useNavigate();
+
   if (isLoading) return <div className="flex items-center justify-center h-64"><LoadingSpinner size="lg" /></div>;
 
   if (isError || !data) return (
@@ -53,7 +56,18 @@ export default function AdminDashboard() {
   return (
     <div className="page-container">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((s) => <StatCard key={s.title} {...s} />)}
+        {stats.map((s) => <StatCard key={s.title} {...s} onClick={() => {
+          // navigate to relevant admin page based on title
+          // Titles: Total Revenue -> /admin/analytics, Total Orders -> /admin/orders, Total Products -> /admin/products, Total Users -> /admin/users
+          const map = {
+            "Total Revenue": "/admin/analytics",
+            "Total Orders": "/admin/orders",
+            "Total Products": "/admin/products",
+            "Total Users": "/admin/users",
+          };
+          const to = map[s.title];
+          if (to) navigate(to);
+        }} />)}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
