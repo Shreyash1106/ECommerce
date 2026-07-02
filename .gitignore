@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+*.pycache/
+venv/
+.venv/
+env/
+backend/.venv/
+
+# Installer / packaging
+*.egg-info/
+build/
+dist/
+
+# Environment files
+.env
+.env.*
+
+# VS Code
+.vscode/
+
+# Node
+node_modules/
+frontend/node_modules/
+
+# Frontend build artifacts
+frontend/dist/
+frontend/dist/**
+build-output.txt
+frontend/dev-output.log
+*.map
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+
+# Test / cache
+.pytest_cache/
+coverage/
+
+# Databases
+*.sqlite3
+*.db
