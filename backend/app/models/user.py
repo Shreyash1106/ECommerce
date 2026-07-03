@@ -25,3 +25,5 @@ class User(Base):
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
     wishlist_items = relationship("WishlistItem", back_populates="user", cascade="all, delete-orphan")
     orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
+
+    saved_searches = relationship("SavedSearch", back_populates="user", cascade="all, delete-orphan")

@@ -9,6 +9,9 @@ export default function StatCard({ title, value, icon: Icon, trend, trendValue, 
     purple: "bg-purple-500/10 text-purple-400 border-purple-500/20",
     orange: "bg-orange-500/10 text-orange-400 border-orange-500/20",
     red: "bg-red-500/10 text-red-400 border-red-500/20",
+    teal: "bg-teal-500/10 text-teal-400 border-teal-500/20",
+    amber: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    emerald: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   };
   const up = trend === "up";
   return (

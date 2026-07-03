@@ -21,7 +21,7 @@ router = APIRouter(tags=["Analytics"])
 @router.get("/dashboard")
 def get_admin_dashboard(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+
 ):
     try:
         summary = analytics_service.get_dashboard_summary(db)
@@ -39,6 +39,7 @@ def get_admin_dashboard(
             "products_trend": summary["products_trend"],
             "users_trend": summary["users_trend"],
             "revenue_data": sales["monthly_sales"],
+            "monthly_orders": sales["monthly_orders"],
             "top_products": [
                 {"id": i, "name": p["product_name"], "sales": p["total_orders"], "revenue": p["total_revenue"]}
                 for i, p in enumerate(top_products, 1)

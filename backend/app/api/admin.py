@@ -4,8 +4,10 @@ from sqlalchemy.orm import Session
 
 from app.models.user import User
 from app.schemas.user import UserResponse
+from app.schemas.user_profile import UserProfile
 from app.database.session import get_db
 from app.core.security import get_current_admin_user
+from app.services.user_profile_service import get_user_profile
 
 router = APIRouter(tags=["Admin"])
 
@@ -46,3 +48,8 @@ def toggle_user_status(
     db.commit()
     db.refresh(user)
     return {"user_id": user.id, "is_active": bool(user.is_active)}
+
+@router.get("/admin/users/{user_id}/profile", response_model=UserProfile)
+
+def get_user_profile_endpoint(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_admin_user)):
+    return get_user_profile(db, user_id)

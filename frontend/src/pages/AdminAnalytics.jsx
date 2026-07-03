@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { ChartWrapper } from "../components/charts/ChartWrapper";
 import { TrendingUp, DollarSign, ShoppingCart, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import client from "../api/client";
@@ -7,23 +7,10 @@ import StatCard from "../components/ui/StatCard";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import EmptyState from "../components/ui/EmptyState";
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
+import { CustomTooltip } from "../components/charts/CustomTooltip";
 
 const PERIODS = ["3M", "6M", "1Y"];
-
-const Tip = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs shadow-xl">
-      <p className="text-gray-400 mb-1.5 font-medium">{label}</p>
-      {payload.map((p) => (
-        <p key={p.name} style={{ color: p.color }} className="flex justify-between gap-4">
-          <span>{p.name}</span>
-          <span className="font-bold">{p.name === "revenue" ? `$${p.value.toLocaleString()}` : p.value}</span>
-        </p>
-      ))}
-    </div>
-  );
-};
 
 export default function AdminAnalytics() {
   const [period, setPeriod] = useState("1Y");
@@ -105,28 +92,14 @@ export default function AdminAnalytics() {
 
       <div className="grid lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 section-card">
-          <div className="px-5 py-4 border-b border-gray-800">
-            <h3 className="text-sm font-semibold text-gray-200">Revenue Trend</h3>
-          </div>
-          <div className="p-5">
-            {monthly.length === 0 ? <EmptyState title="No revenue data yet" /> : (
-              <ResponsiveContainer width="100%" height={240}>
-                <AreaChart data={monthly}>
-                  <defs>
-                    <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#6366f1" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1a1a24" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#6b6b84" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6b6b84" }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v / 1000}k`} />
-                  <Tooltip content={<Tip />} />
-                  <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={2} fill="url(#g1)" name="revenue" />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
-          </div>
+          <ChartWrapper
+            type="area"
+            title="Revenue Trend"
+            data={monthly}
+            gradientId="adminAreaGrad"
+            xKey="month"
+            yKey="revenue"
+          />
         </div>
 
         <div className="section-card">
@@ -141,7 +114,7 @@ export default function AdminAnalytics() {
                     <Pie data={categories} cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={3} dataKey="value">
                       {categories.map((e) => <Cell key={e.name} fill={e.color} />)}
                     </Pie>
-                    <Tooltip formatter={(v) => `$${v}`} contentStyle={{ background: "#1a1a24", border: "1px solid #252534", borderRadius: "8px", fontSize: "11px" }} />
+                    <Tooltip content={<CustomTooltip />} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="space-y-2 mt-2">
@@ -173,7 +146,7 @@ export default function AdminAnalytics() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#1a1a24" horizontal={false} />
                   <XAxis type="number" tick={{ fontSize: 11, fill: "#6b6b84" }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#9494a8" }} axisLine={false} tickLine={false} width={110} />
-                  <Tooltip content={<Tip />} />
+                  <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="sales" fill="#6366f1" radius={[0, 4, 4, 0]} name="sales" />
                 </BarChart>
               </ResponsiveContainer>
@@ -192,7 +165,7 @@ export default function AdminAnalytics() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#1a1a24" />
                   <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#6b6b84" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: "#6b6b84" }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<Tip />} />
+                  <Tooltip content={<CustomTooltip />} />
                   <Line type="monotone" dataKey="customers" stroke="#8b5cf6" strokeWidth={2.5} dot={{ fill: "#8b5cf6", r: 3 }} name="customers" />
                 </LineChart>
               </ResponsiveContainer>
@@ -212,7 +185,7 @@ export default function AdminAnalytics() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#1a1a24" />
                 <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#6b6b84" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "#6b6b84" }} axisLine={false} tickLine={false} />
-                <Tooltip content={<Tip />} />
+                <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="orders" fill="#3b82f6" radius={[3, 3, 0, 0]} name="orders" />
               </BarChart>
             </ResponsiveContainer>

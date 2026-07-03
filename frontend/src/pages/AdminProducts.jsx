@@ -11,7 +11,7 @@ import LoadingSpinner from "../components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 
 const STATUSES  = ["All", "In Stock", "Low Stock", "Out of Stock"];
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 const EMPTY_FORM = { name: "", price: "", category_id: "", description: "" };
 
 const stockStatus = (qty) => {
@@ -94,6 +94,13 @@ export default function AdminProducts() {
     retry: 1,
   });
 
+  // Ensure only one "All" category
+  const filteredCategories = useMemo(() => {
+    const all = { id: "all", name: "All" };
+    const cats = categories.filter((c) => c.name !== "All");
+    return [all, ...cats];
+  }, [categories]);
+
   const createMutation = useMutation({
     mutationFn: (data) => client.post("/products", data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["adminProducts"] }); toast.success("Product created!"); setCreateOpen(false); setForm(EMPTY_FORM); },
@@ -157,140 +164,90 @@ export default function AdminProducts() {
     <div className="page-container">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-lg font-semibold text-white">Products</h1>
-          <p className="text-xs text-gray-500 mt-0.5">{filtered.length} products total</p>
+          <p className="text-xs text-gray-500">{filtered.length} products total</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative hidden sm:block">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-            <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              placeholder="Search products…" className="input-field pl-9 h-9 text-sm w-64" />
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              placeholder="Search..."
+              className="bg-gray-800 border-none rounded-xl pl-9 pr-3 h-11 text-sm w-full sm:w-64 focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-500"
+            />
           </div>
-          <select value={statusFilter} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="input-field h-9 text-sm w-auto">
+          <select
+            value={statusFilter}
+            onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+            className="bg-gray-800 border-none rounded-xl h-11 text-sm text-gray-300 px-3"
+          >
             {STATUSES.map((s) => <option key={s}>{s}</option>)}
           </select>
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="input-field h-9 text-sm w-auto">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-gray-800 border-none rounded-xl h-11 text-sm text-gray-300 px-3"
+          >
             <option value="relevance">Relevance</option>
             <option value="price_asc">Price: Low to High</option>
             <option value="price_desc">Price: High to Low</option>
-            <option value="rating">Top Rated</option>
           </select>
-          <div>
-            <button onClick={() => { setForm(EMPTY_FORM); setCreateOpen(true); }} className="btn-primary">
-              <Plus size={15} /> Add Product
-            </button>
-          </div>
+          <button
+            onClick={() => { setForm(EMPTY_FORM); setCreateOpen(true); }}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 h-11 rounded-xl flex items-center gap-2 font-medium text-sm transition"
+          >
+            <Plus size={16} /> Add
+          </button>
         </div>
       </div>
 
-      {/* Banner slider */}
-      <div className="mb-6">
-        <div className="relative w-full overflow-hidden rounded-xl bg-gray-800">
-          <div ref={slideRef} className="flex transition-transform duration-700" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="md:col-span-3 relative w-full overflow-hidden rounded-2xl bg-gray-800">
+          <div ref={slideRef} className="flex transition-transform duration-700 ease-out" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
             {(banners.length ? banners : [{ image_url: "https://via.placeholder.com/1200x380?text=No+Banners" }]).map((b, i) => (
               <div key={i} className="w-full flex-shrink-0">
-                <img src={b.image_url || b.url || "https://via.placeholder.com/1200x380?text=No+Banners"} alt={b.title || `banner-${i}`} className="w-full h-44 sm:h-56 md:h-64 object-cover" />
+                <img src={b.image_url || b.url || "https://via.placeholder.com/1200x380?text=No+Banners"} alt={b.title || ""} className="w-full h-48 md:h-64 object-cover" />
               </div>
             ))}
           </div>
-          {banners.length > 0 && (
-            <>
-              <button onClick={() => setCurrentSlide((s) => (s - 1 + banners.length) % banners.length)} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/40 rounded-full">
-                <ChevronLeft size={18} />
+        </div>
+        <div className="space-y-4">
+          <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Categories</h2>
+          <div className="flex flex-col gap-2 overflow-y-auto max-h-[220px] custom-scrollbar">
+            {(filteredCategories.length ? filteredCategories : [{ id: "all", name: "All" }]).map((c) => (
+              <button key={c.id} onClick={() => { setSelectedCategory(c.id === undefined ? null : c.id); setPage(1); }}
+                className={`text-left px-4 py-2.5 rounded-xl text-sm transition ${selectedCategory && Number(selectedCategory) === Number(c.id) ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}
+                >
+                {c.name}
               </button>
-              <button onClick={() => setCurrentSlide((s) => (s + 1) % banners.length)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/40 rounded-full">
-                <ChevronRight size={18} />
-              </button>
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2">
-                {banners.map((_, i) => (
-                  <button key={i} onClick={() => setCurrentSlide(i)} className={`w-2 h-2 rounded-full ${i === currentSlide ? "bg-white" : "bg-white/40"}`} />
-                ))}
-              </div>
-            </>
-          )}
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Categories scroller */}
-      <div className="mb-6">
-        <div className="flex gap-3 overflow-x-auto py-2">
-          {(categories.length ? categories : [{ id: "all", name: "All" }]).map((c) => (
-            <button key={c.id} onClick={() => { setSelectedCategory(c.id === undefined ? null : c.id); setPage(1); }}
-              className={`flex-shrink-0 min-w-[110px] px-3 py-2 bg-gray-800 rounded-lg flex items-center gap-3 transition-shadow ${selectedCategory && Number(selectedCategory) === Number(c.id) ? "ring-2 ring-indigo-500" : "hover:shadow-lg"}`}>
-              <img src={c.image_url || c.icon || "https://via.placeholder.com/64?text=Cat"} alt={c.name} className="w-10 h-10 rounded-md object-cover" />
-              <div className="text-left">
-                <div className="text-sm font-medium text-gray-200">{c.name}</div>
-                <div className="text-xs text-gray-400">{c.product_count ? `${c.product_count} items` : ""}</div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Products grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-            <div key={i} className="section-card animate-pulse">
-              <div className="h-44 bg-gray-800 rounded-t-lg" />
-              <div className="p-4">
-                <div className="h-4 bg-gray-700 rounded w-3/4 mb-2" />
-                <div className="h-3 bg-gray-700 rounded w-1/2 mb-3" />
-                <div className="h-8 bg-gray-700 rounded w-full" />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="section-card"><EmptyState title="No products found" description="Try adjusting your search or add a new product." icon={Filter} /></div>
-      ) : (
-        <>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {paginated.map((p) => {
-              const qty = p.inventory?.quantity;
-              const status = stockStatus(qty);
-              const img = p.images?.[0]?.url || p.image_url || p.thumbnail_url || "https://via.placeholder.com/400x300?text=No+Image";
-              const discount = p.discount_percent || p.discount || 0;
-              const rating = p.rating || p.avg_rating || 0;
-              return (
-                <div key={p.id} className="bg-gray-850 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
-                  <div className="relative h-44 bg-gray-800">
-                    <img src={img} alt={p.name} className="w-full h-full object-cover" />
-                    <button className="absolute top-2 right-2 p-2 bg-black/30 rounded-full text-white hover:bg-black/50">
-                      <Heart size={16} />
-                    </button>
-                    {discount > 0 && (
-                      <div className="absolute left-2 top-2 bg-red-600 text-white text-xs px-2 py-1 rounded">{discount}% OFF</div>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-sm font-semibold text-gray-200 truncate">{p.name}</h3>
-                      <div className="flex items-center gap-1 text-yellow-400 text-xs"><Star size={14} /> <span className="text-xs">{rating || "—"}</span></div>
-                    </div>
-                    <p className="text-xs text-gray-400 mb-2 truncate">{p.category?.name || "—"}</p>
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <div className="text-base font-bold text-white">${Number(p.price).toFixed(2)}</div>
-                        {p.compare_at_price && <div className="text-xs text-gray-400 line-through">${Number(p.compare_at_price).toFixed(2)}</div>}
-                      </div>
-                      <div className="text-xs text-gray-400">{qty ?? 0} left</div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => navigate(`/products/${p.id}`)} className="flex-1 btn-secondary text-xs py-1.5 justify-center"><Eye size={12} /> View</button>
-                      <button onClick={() => openEdit(p)} className="flex-1 btn-outline text-xs py-1.5 justify-center"><Pencil size={12} /> Edit</button>
-                      <button onClick={() => setDeleteTarget(p)} className="btn-danger text-xs py-1.5 px-2.5"><Trash2 size={12} /></button>
-                    </div>
-                  </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {paginated.map((p) => {
+          const qty = p.inventory?.quantity;
+          const img = p.images?.[0]?.url || p.image_url || p.thumbnail_url || "https://via.placeholder.com/400x300?text=No+Image";
+          return (
+            <div key={p.id} className="bg-gray-800 rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all border border-gray-700/50 flex flex-col h-full">
+                <img src={img} alt={p.name} className="w-full aspect-[4/3] object-cover rounded-lg mb-3" onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/400x300?text=No+Image"; }} />
+                <h3 className="font-medium text-white text-sm truncate">{p.name}</h3>
+                <p className="text-indigo-400 font-bold mt-1 text-lg">${Number(p.price).toFixed(2)}</p>
+                <div className="flex gap-2 mt-3">
+                  <button onClick={() => openEdit(p)} className="flex-1 h-11 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded transition">Edit</button>
+                  <button onClick={() => setDeleteTarget(p)} className="flex-1 h-11 text-sm bg-red-900/30 text-red-400 hover:bg-red-900/50 rounded transition flex items-center justify-center">
+                    <Trash2 size={14} />
+                  </button>
                 </div>
-              );
-            })}
-          </div>
-          <div className="section-card mt-4">
-            <Pagination page={page} total={filtered.length} pageSize={PAGE_SIZE} onChange={setPage} />
-          </div>
-        </>
-      )}
+              </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-8 flex justify-center">
+        <Pagination page={page} total={filtered.length} pageSize={PAGE_SIZE} onChange={setPage} />
+      </div>
 
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Add New Product">
         <ProductForm form={form} onChange={setForm} onSubmit={handleCreate} submitLabel="Create Product" loading={createMutation.isPending} />
@@ -300,12 +257,16 @@ export default function AdminProducts() {
       </Modal>
       <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Delete Product" size="sm">
         <div className="text-center py-2">
-          <p className="text-sm text-gray-300 mb-1">Delete <span className="font-semibold text-white">"{deleteTarget?.name}"</span>?</p>
+          <p className="text-sm text-gray-300 mb-1">Delete <span className="font-semibold text-white">{deleteTarget?.name}</span>?</p>
           <p className="text-xs text-gray-500 mb-5">This action cannot be undone.</p>
           <div className="flex gap-2 justify-center">
-            <button onClick={() => setDeleteTarget(null)} className="btn-secondary">Cancel</button>
-            <button onClick={() => deleteMutation.mutate(deleteTarget.id)} disabled={deleteMutation.isPending} className="btn-danger border-red-500/50 bg-red-600/20 text-red-400">
-              {deleteMutation.isPending ? <span className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" /> : "Delete"}
+            <button onClick={() => setDeleteTarget(null)} className="flex-1 btn-secondary text-sm py-2 px-4 whitespace-nowrap">Cancel</button>
+            <button
+              onClick={() => deleteMutation.mutate(deleteTarget.id)}
+              className="flex-1 btn-danger border-red-500/50 bg-red-600/20 text-red-400 text-sm py-2 px-4 whitespace-nowrap"
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? <span className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" /> : 'Delete'}
             </button>
           </div>
         </div>

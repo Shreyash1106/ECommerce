@@ -36,16 +36,16 @@
     @apply bg-gray-800/50;
   }
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500
-    text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 min-w-[100px] whitespace-nowrap bg-indigo-600 hover:bg-indigo-500
+    text-white text-base font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-secondary {
-    @apply inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700
-    text-gray-300 text-sm font-medium rounded-lg border border-gray-700 transition-colors;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 min-w-[100px] whitespace-nowrap bg-gray-800 hover:bg-gray-700
+    text-gray-300 text-base font-medium rounded-lg border border-gray-700 transition-colors;
   }
   .btn-danger {
-    @apply inline-flex items-center gap-2 px-4 py-2 bg-red-600/20 hover:bg-red-600/30
-    text-red-400 text-sm font-medium rounded-lg border border-red-500/30 transition-colors;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 min-w-[100px] whitespace-nowrap bg-red-600/20 hover:bg-red-600/30
+    text-red-400 text-base font-medium rounded-lg border border-red-500/30 transition-colors;
   }
   .input-field {
     @apply w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white

@@ -7,19 +7,7 @@ import StatCard from "../components/ui/StatCard";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import EmptyState from "../components/ui/EmptyState";
 
-const Tip = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs shadow-xl">
-      <p className="text-gray-400 mb-1">{label}</p>
-      {payload.map((p) => (
-        <p key={p.name} style={{ color: p.color }} className="font-bold">
-          {p.name === "revenue" ? `$${p.value.toLocaleString()}` : p.value}
-        </p>
-      ))}
-    </div>
-  );
-};
+
 
 export default function VendorAnalytics() {
   const { data: analytics, isLoading } = useQuery({
@@ -67,7 +55,7 @@ export default function VendorAnalytics() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#1a1a24" />
                 <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#6b6b84" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "#6b6b84" }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v / 1000}k`} />
-                <Tooltip content={<Tip />} />
+                <Tooltip content={<CustomTooltip />} />
                 <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={2} fill="url(#vGrad)" name="revenue" />
               </AreaChart>
             </ResponsiveContainer>

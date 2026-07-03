@@ -19,6 +19,7 @@ export default function AdminUsers() {
   const [roleFilter, setRoleFilter]     = useState("All");
   const [page, setPage]                 = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [profileTarget, setProfileTarget] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: users = [], isLoading, isError } = useQuery({
@@ -35,6 +36,14 @@ export default function AdminUsers() {
       setDeleteTarget(null);
     },
     onError: (err) => toast.error(err.response?.data?.detail || "Failed to delete user."),
+  });
+
+  // Fetch selected user's profile when modal opens
+  const { data: profileData, isLoading: profileLoading, isError: profileError } = useQuery({
+    queryKey: ["adminUserProfile", profileTarget?.id],
+    queryFn: () => client.get(`/admin/users/${profileTarget?.id}/profile`).then(r => r.data),
+    enabled: !!profileTarget,
+    onError: () => toast.error("Failed to load user profile."),
   });
 
   const filtered = useMemo(() => users.filter((u) => {
@@ -97,10 +106,11 @@ export default function AdminUsers() {
                 </thead>
                 <tbody className="divide-y divide-gray-800">
                   {paginated.map((u, i) => (
-                    <tr key={u.id}>
+                    <tr key={u.id} className="cursor-pointer hover:bg-gray-800" onClick={() => setProfileTarget(u)}>
                       <td>
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full ${AVATAR_COLORS[i % AVATAR_COLORS.length]} flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}>
+                          <div className={`w-8 h-8 rounded-full ${AVATAR_COLORS[i % AVATAR_COLORS.length]} flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}
+>
                             {initials(u.name)}
                           </div>
                           <div>
@@ -115,7 +125,7 @@ export default function AdminUsers() {
                         {u.created_at ? new Date(u.created_at).toLocaleDateString() : "N/A"}
                       </td>
                       <td>
-                        <button onClick={() => setDeleteTarget(u)}
+                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(u); }}
                           className="p-1.5 rounded-md hover:bg-gray-700 text-gray-500 hover:text-red-400 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                         </button>
@@ -130,6 +140,7 @@ export default function AdminUsers() {
         )}
       </div>
 
+      {/* Delete confirmation modal */}
       <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Remove User" size="sm">
         <div className="text-center py-2">
           <p className="text-sm text-gray-300 mb-1">Remove <span className="font-semibold text-white">"{deleteTarget?.name}"</span>?</p>
@@ -143,6 +154,22 @@ export default function AdminUsers() {
                 : "Remove"}
             </button>
           </div>
+        </div>
+      </Modal>
+      {/* Profile modal */}
+      <Modal open={!!profileTarget} onClose={() => setProfileTarget(null)} title="User Profile" size="md">
+        <div className="p-4">
+          {profileLoading && <LoadingSpinner size="lg" />}
+          {profileError && <p className="text-red-400 text-sm">Failed to load profile.</p>}
+          {profileData && (
+            <div className="space-y-3">
+              <p><strong>Name:</strong> {profileData.name}</p>
+              <p><strong>Email:</strong> {profileData.email}</p>
+              <p><strong>Role:</strong> {profileData.role}</p>
+              <p><strong>Verified:</strong> {profileData.is_verified ? "Yes" : "No"}</p>
+              <p><strong>Joined:</strong> {profileData.created_at ? new Date(profileData.created_at).toLocaleDateString() : "N/A"}</p>
+            </div>
+          )}
         </div>
       </Modal>
     </div>

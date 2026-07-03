@@ -26,6 +26,7 @@ def get_total_orders(db: Session) -> int:
 
 
 def get_total_revenue(db: Session) -> float:
+    # Sum total_price across orders, default to 0.0, and cast to float
     return float(db.query(func.coalesce(func.sum(Order.total_price), 0.0)).scalar())
 
 
@@ -134,6 +135,13 @@ def get_sales_analytics(db: Session) -> Dict[str, List[Dict[str, Any]]]:
         {"month": f"{int(year)}-{int(month):02d}", "revenue": float(rev)}
         for year, month, rev in monthly_rows
     ]
+    # Build monthly order counts using the same grouping
+    monthly_orders = [
+        {"month": f"{int(year)}-{int(month):02d}", "orders": int(db.query(func.count(Order.id))
+            .filter(extract("year", Order.created_at) == year, extract("month", Order.created_at) == month)
+            .scalar() or 0)}
+        for year, month, _ in monthly_rows
+    ]
 
     # Yearly
     yearly_rows = (
@@ -151,6 +159,7 @@ def get_sales_analytics(db: Session) -> Dict[str, List[Dict[str, Any]]]:
         "daily_sales": daily_data,
         "monthly_sales": monthly_data,
         "yearly_sales": yearly_data,
+        "monthly_orders": monthly_orders,
     }
 
 

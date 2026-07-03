@@ -6,7 +6,7 @@ import client from "../api/client";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import EmptyState from "../components/ui/EmptyState";
 import AppImage from "../components/ui/AppImage";
-
+import QuickViewModal from "../components/QuickViewModal.jsx";
 // Debounce hook
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -56,6 +56,16 @@ export default function SearchResults() {
   const [viewMode, setViewMode] = useState("grid"); // grid or list
   const [recentSearches, setRecentSearches] = useState([]);
   const [wishlist, setWishlist] = useState(new Set());
+  const [quickViewProduct, setQuickViewProduct] = useState(null);
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const openQuickView = (product) => {
+    setQuickViewProduct(product);
+    setIsQuickViewOpen(true);
+  };
+  const closeQuickView = () => {
+    setIsQuickViewOpen(false);
+    setQuickViewProduct(null);
+  };
 
   const debouncedSearchQuery = useDebounce(searchQuery, 400);
 
@@ -656,10 +666,10 @@ export default function SearchResults() {
               <div className={viewMode === "grid" ? "grid sm:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-4"}>
                 {products.map((p) => (
                   viewMode === "grid" ? (
-                    <Link key={p.id} to={`/product/${p.id}`} className="section-card hover:border-gray-700 transition-colors block relative">
+                    <div key={p.id} onClick={() => openQuickView(p.id)} className="section-card hover:border-gray-700 transition-colors block relative cursor-pointer">
                       <button
                         onClick={(e) => {
-                          e.preventDefault();
+                          e.stopPropagation();
                           toggleWishlist(p.id);
                         }}
                         className="absolute top-2 right-2 z-10 p-2 bg-gray-900/50 hover:bg-gray-900 rounded-full transition-colors"
@@ -717,9 +727,9 @@ export default function SearchResults() {
                           )}
                         </div>
                       </div>
-                    </Link>
+                    </div>
                   ) : (
-                    <Link key={p.id} to={`/product/${p.id}`} className="section-card hover:border-gray-700 transition-colors block relative">
+                    <div key={p.id} onClick={() => openQuickView(p.id)} className="section-card hover:border-gray-700 transition-colors block relative cursor-pointer">
                       <div className="flex gap-4 p-4">
                         <div className="w-32 h-32 bg-gray-800 flex items-center justify-center rounded-lg overflow-hidden flex-shrink-0 relative">
                           {p.image_url ? (
@@ -769,7 +779,7 @@ export default function SearchResults() {
                             </div>
                             <button
                               onClick={(e) => {
-                                e.preventDefault();
+                                e.stopPropagation();
                                 toggleWishlist(p.id);
                               }}
                               className="p-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors"
@@ -782,7 +792,7 @@ export default function SearchResults() {
                           </div>
                         </div>
                       </div>
-                    </Link>
+                    </div>
                   )
                 ))}
               </div>
