@@ -103,7 +103,7 @@ export const ChartWrapper = ({
             <YAxis tick={axisTickStyle} axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
             {showLegend && <Legend verticalAlign="top" height={36} />}
-            <Line type="monotone" dataKey="value" stroke={primary} strokeWidth={2} dot={{ r: 3 }} animationBegin={0} animationDuration={800} />
+            <Line type="monotone" dataKey={yDataKey} stroke={primary} strokeWidth={2} dot={{ r: 3 }} animationBegin={0} animationDuration={800} />
           </LineChart>
         );
       case 'pie':

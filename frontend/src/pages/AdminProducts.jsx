@@ -9,7 +9,7 @@ import Pagination from "../components/ui/Pagination";
 import EmptyState from "../components/ui/EmptyState";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
-
+import placeholderImg from "../assets/placeholder.png";
 const STATUSES  = ["All", "In Stock", "Low Stock", "Out of Stock"];
 const PAGE_SIZE = 15;
 const EMPTY_FORM = { name: "", price: "", category_id: "", description: "" };
@@ -62,7 +62,6 @@ export default function AdminProducts() {
   const [statusFilter, setStatus]       = useState("All");
   const [view, setView]                 = useState("grid");
   const [page, setPage]                 = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState(null);
   const [sortBy, setSortBy] = useState("relevance");
   const [createOpen, setCreateOpen]     = useState(false);
   const [editTarget, setEditTarget]     = useState(null);
@@ -94,13 +93,6 @@ export default function AdminProducts() {
     retry: 1,
   });
 
-  // Ensure only one "All" category
-  const filteredCategories = useMemo(() => {
-    const all = { id: "all", name: "All" };
-    const cats = categories.filter((c) => c.name !== "All");
-    return [all, ...cats];
-  }, [categories]);
-
   const createMutation = useMutation({
     mutationFn: (data) => client.post("/products", data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["adminProducts"] }); toast.success("Product created!"); setCreateOpen(false); setForm(EMPTY_FORM); },
@@ -124,11 +116,22 @@ export default function AdminProducts() {
     const status = stockStatus(qty);
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "All" || status === statusFilter;
-    const matchCategory = !selectedCategory || (p.category && Number(p.category.id) === Number(selectedCategory));
-    return matchSearch && matchStatus && matchCategory;
+    return matchSearch && matchStatus;
   }), [products, search, statusFilter]);
 
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  // Sort filtered products based on selected sort option
+  const sortedProducts = useMemo(() => {
+    const arr = [...filtered];
+    if (sortBy === "price_asc") {
+      arr.sort((a, b) => Number(a.price) - Number(b.price));
+    } else if (sortBy === "price_desc") {
+      arr.sort((a, b) => Number(b.price) - Number(a.price));
+    }
+    // "relevance" keeps original order (no sorting)
+    return arr;
+  }, [filtered, sortBy]);
+
+  const paginated = sortedProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   useEffect(() => {
     // auto-advance slider every 4 seconds
@@ -161,32 +164,33 @@ export default function AdminProducts() {
   );
 
   return (
-    <div className="page-container">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+    <div className="min-h-screen text-white pb-10 px-8 py-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <p className="text-xs text-gray-500">{filtered.length} products total</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Products</h1>
+          <p className="text-gray-400 text-sm mt-1">{filtered.length} products total</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
             <input
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               placeholder="Search..."
-              className="bg-gray-800 border-none rounded-xl pl-9 pr-3 h-11 text-sm w-full sm:w-64 focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-500"
+              className="bg-gray-900/50 border border-white/10 rounded-xl pl-10 pr-4 h-11 text-sm w-full sm:w-64 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all text-white placeholder-gray-500"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-            className="bg-gray-800 border-none rounded-xl h-11 text-sm text-gray-300 px-3"
+            className="bg-gray-900/50 border border-white/10 rounded-xl h-11 text-sm text-gray-300 px-4 focus:outline-none focus:border-indigo-500/50 transition-all"
           >
             {STATUSES.map((s) => <option key={s}>{s}</option>)}
           </select>
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="bg-gray-800 border-none rounded-xl h-11 text-sm text-gray-300 px-3"
+            onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
+            className="bg-gray-900/50 border border-white/10 rounded-xl h-11 text-sm text-gray-300 px-4 focus:outline-none focus:border-indigo-500/50 transition-all"
           >
             <option value="relevance">Relevance</option>
             <option value="price_asc">Price: Low to High</option>
@@ -194,49 +198,41 @@ export default function AdminProducts() {
           </select>
           <button
             onClick={() => { setForm(EMPTY_FORM); setCreateOpen(true); }}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 h-11 rounded-xl flex items-center gap-2 font-medium text-sm transition"
+            className="bg-indigo-600 hover:bg-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_20px_rgba(79,70,229,0.5)] text-white px-5 h-11 rounded-xl flex items-center gap-2 font-semibold text-sm transition-all hover:-translate-y-0.5"
           >
-            <Plus size={16} /> Add
+            <Plus size={16} /> Add Product
           </button>
         </div>
       </div>
 
-      <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="md:col-span-3 relative w-full overflow-hidden rounded-2xl bg-gray-800">
-          <div ref={slideRef} className="flex transition-transform duration-700 ease-out" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
-            {(banners.length ? banners : [{ image_url: "https://via.placeholder.com/1200x380?text=No+Banners" }]).map((b, i) => (
-              <div key={i} className="w-full flex-shrink-0">
-                <img src={b.image_url || b.url || "https://via.placeholder.com/1200x380?text=No+Banners"} alt={b.title || ""} className="w-full h-48 md:h-64 object-cover" />
-              </div>
-            ))}
+      {banners.length > 0 && (
+        <div className="mb-8 w-full">
+          <div className="relative w-full overflow-hidden rounded-2xl bg-gray-900/40 backdrop-blur-md border border-white/5 shadow-xl">
+            <div ref={slideRef} className="flex transition-transform duration-700 ease-out" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+              {banners.map((b, i) => (
+                <div key={i} className="w-full flex-shrink-0">
+                  <img src={b.image_url || b.url || placeholderImg} alt={b.title || ""} className="w-full h-48 md:h-64 object-cover" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="space-y-4">
-          <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Categories</h2>
-          <div className="flex flex-col gap-2 overflow-y-auto max-h-[220px] custom-scrollbar">
-            {(filteredCategories.length ? filteredCategories : [{ id: "all", name: "All" }]).map((c) => (
-              <button key={c.id} onClick={() => { setSelectedCategory(c.id === undefined ? null : c.id); setPage(1); }}
-                className={`text-left px-4 py-2.5 rounded-xl text-sm transition ${selectedCategory && Number(selectedCategory) === Number(c.id) ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}
-                >
-                {c.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {paginated.map((p) => {
           const qty = p.inventory?.quantity;
-          const img = p.images?.[0]?.url || p.image_url || p.thumbnail_url || "https://via.placeholder.com/400x300?text=No+Image";
+          const img = p.images?.[0]?.url || p.image_url || p.thumbnail_url || placeholderImg;
           return (
-            <div key={p.id} className="bg-gray-800 rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all border border-gray-700/50 flex flex-col h-full">
-                <img src={img} alt={p.name} className="w-full aspect-[4/3] object-cover rounded-lg mb-3" onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/400x300?text=No+Image"; }} />
-                <h3 className="font-medium text-white text-sm truncate">{p.name}</h3>
-                <p className="text-indigo-400 font-bold mt-1 text-lg">${Number(p.price).toFixed(2)}</p>
-                <div className="flex gap-2 mt-3">
-                  <button onClick={() => openEdit(p)} className="flex-1 h-11 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded transition">Edit</button>
-                  <button onClick={() => setDeleteTarget(p)} className="flex-1 h-11 text-sm bg-red-900/30 text-red-400 hover:bg-red-900/50 rounded transition flex items-center justify-center">
+            <div key={p.id} className="bg-gray-900/40 backdrop-blur-md rounded-2xl p-4 shadow-lg hover:shadow-2xl transition-all duration-300 border border-white/5 flex flex-col h-full group hover:-translate-y-1">
+                <div className="overflow-hidden rounded-xl mb-4 relative">
+                  <img src={img} alt={p.name} className="w-full aspect-[4/3] object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.target.onerror = null; e.target.src = placeholderImg; }} />
+                </div>
+                <h3 className="font-semibold text-gray-200 text-sm truncate group-hover:text-white transition-colors">{p.name}</h3>
+                <p className="text-indigo-400 font-bold mt-1.5 text-lg">${Number(p.price).toFixed(2)}</p>
+                <div className="flex gap-2 mt-4 pt-4 border-t border-white/5">
+                  <button onClick={() => openEdit(p)} className="flex-1 h-9 text-xs font-semibold bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-transparent hover:border-white/10">Edit</button>
+                  <button onClick={() => setDeleteTarget(p)} className="flex-1 h-9 text-xs font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors flex items-center justify-center border border-transparent hover:border-red-500/20">
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -245,9 +241,7 @@ export default function AdminProducts() {
         })}
       </div>
 
-      <div className="mt-8 flex justify-center">
-        <Pagination page={page} total={filtered.length} pageSize={PAGE_SIZE} onChange={setPage} />
-      </div>
+      <Pagination page={page} total={filtered.length} pageSize={PAGE_SIZE} onChange={setPage} />
 
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Add New Product">
         <ProductForm form={form} onChange={setForm} onSubmit={handleCreate} submitLabel="Create Product" loading={createMutation.isPending} />

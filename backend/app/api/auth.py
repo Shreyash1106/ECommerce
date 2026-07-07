@@ -45,18 +45,72 @@ def update_profile(updated_data: UserUpdate, current_user: User = Depends(get_cu
         if existing_user:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already in use")
 
-    if updated_data.name is not None:
-        current_user.name = updated_data.name
+    if updated_data.username and updated_data.username != current_user.username:
+        existing_username = db.query(User).filter(User.username == updated_data.username).first()
+        if existing_username:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already taken")
+
+    if updated_data.phone and updated_data.phone != current_user.phone:
+        existing_phone = db.query(User).filter(User.phone == updated_data.phone).first()
+        if existing_phone:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Phone number already in use")
+
+    if updated_data.first_name is not None:
+        current_user.first_name = updated_data.first_name
+    if updated_data.last_name is not None:
+        current_user.last_name = updated_data.last_name
+    if updated_data.username is not None:
+        current_user.username = updated_data.username
     if updated_data.email is not None:
         current_user.email = updated_data.email
+    if updated_data.phone is not None:
+        current_user.phone = updated_data.phone
     if updated_data.notify_new_orders is not None:
-        current_user.notify_new_orders = int(updated_data.notify_new_orders)
+        current_user.notify_new_orders = updated_data.notify_new_orders
     if updated_data.notify_low_stock_alerts is not None:
-        current_user.notify_low_stock_alerts = int(updated_data.notify_low_stock_alerts)
+        current_user.notify_low_stock_alerts = updated_data.notify_low_stock_alerts
     if updated_data.notify_user_activity is not None:
-        current_user.notify_user_activity = int(updated_data.notify_user_activity)
+        current_user.notify_user_activity = updated_data.notify_user_activity
     if updated_data.notify_system_updates is not None:
-        current_user.notify_system_updates = int(updated_data.notify_system_updates)
+        current_user.notify_system_updates = updated_data.notify_system_updates
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+from fastapi import UploadFile, File
+from app.utils.cloudinary import upload_image, delete_image
+
+@router.post("/profile/photo", response_model=UserResponse)
+def upload_profile_photo(
+    file: UploadFile = File(...), 
+    current_user: User = Depends(get_current_user), 
+    db: Session = Depends(get_db)
+):
+    """Upload a profile photo."""
+    # Check file size (approx. 5MB limit)
+    # Upload to Cloudinary
+    image_url = upload_image(file, folder=f"ecommerce/profiles/{current_user.id}")
+    
+    # If user already had a photo, we could delete it from cloudinary here to save space
+    # but we need public_id. Let's just update the url for now.
+    
+    current_user.avatar_url = image_url
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+@router.delete("/profile/photo", response_model=UserResponse)
+def remove_profile_photo(
+    current_user: User = Depends(get_current_user), 
+    db: Session = Depends(get_db)
+):
+    """Remove profile photo."""
+    if not current_user.avatar_url:
+        raise HTTPException(status_code=400, detail="No profile photo to remove")
+        
+    current_user.avatar_url = None
     db.add(current_user)
     db.commit()
     db.refresh(current_user)

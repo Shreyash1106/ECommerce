@@ -18,7 +18,7 @@ class Order(Base):
 
     @property
     def customer(self):
-        return self.user.name if self.user else None
+        return f"{self.user.first_name} {self.user.last_name}" if self.user else None
 
     @property
     def email(self):

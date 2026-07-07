@@ -200,7 +200,7 @@ def get_recent_orders(db: Session, limit: int = RECENT_ORDERS_LIMIT) -> List[Dic
             "order_id": o.id,
             "user_id": o.user_id,
             "product_id": o.product_id,
-            "customer": o.user.name if o.user else f"User #{o.user_id}",
+            "customer": f"{o.user.first_name} {o.user.last_name}" if o.user else f"User #{o.user_id}",
             "email": o.user.email if o.user else "",
             "product_name": o.product.name if o.product else f"Product #{o.product_id}",
             "quantity": o.quantity,

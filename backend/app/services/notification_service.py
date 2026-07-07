@@ -30,3 +30,17 @@ def delete_notification(db: Session, notification_id: int, user_id: int) -> None
         raise ValueError("Notification not found")
     db.delete(notif)
     db.commit()
+
+def create_notification(db: Session, user_id: int, title: str, message: str, notification_type: str) -> Notification:
+    """Create a new notification for a user."""
+    notification = Notification(
+        user_id=user_id,
+        title=title,
+        message=message,
+        type=notification_type,
+        is_read=False
+    )
+    db.add(notification)
+    db.commit()
+    db.refresh(notification)
+    return notification

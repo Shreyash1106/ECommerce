@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { ChartWrapper } from "../components/charts/ChartWrapper";
+import AdvancedRevenueChart from "../components/charts/AdvancedRevenueChart";
+import RevenueTrendChart from "../components/charts/RevenueTrendChart";
+import DailyOrdersChart from "../components/charts/DailyOrdersChart";
+import CategoryRadarChart from "../components/charts/CategoryRadarChart";
+import ProductScatterChart from "../components/charts/ProductScatterChart";
+import OrderRevenueComposedChart from "../components/charts/OrderRevenueComposedChart";
+import SalesFunnelChart from "../components/charts/SalesFunnelChart";
 import { TrendingUp, DollarSign, ShoppingCart, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import client from "../api/client";
@@ -7,8 +13,7 @@ import StatCard from "../components/ui/StatCard";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import EmptyState from "../components/ui/EmptyState";
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
-import { CustomTooltip } from "../components/charts/CustomTooltip";
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, BarChart, Bar, Area, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 
 const PERIODS = ["3M", "6M", "1Y"];
 
@@ -70,8 +75,8 @@ export default function AdminAnalytics() {
     <div className="page-container">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-white">Analytics</h1>
-          <p className="text-xs text-gray-500 mt-0.5">Business performance overview</p>
+          <h1 className="text-lg font-semibold text-white">Analytics Dashboard</h1>
+          <p className="text-xs text-gray-500 mt-0.5">Business performance overview with advanced insights</p>
         </div>
         <div className="flex border border-gray-700 rounded-lg overflow-hidden">
           {PERIODS.map((p) => (
@@ -84,114 +89,27 @@ export default function AdminAnalytics() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Revenue"    value={`$${Number(dashboard?.total_revenue || 0).toLocaleString()}`} icon={DollarSign}  color="indigo" trend={dashboard?.revenue_trend >= 0 ? "up" : "down"} trendValue={Math.abs(dashboard?.revenue_trend || 0)} onClick={() => navigate('/admin/analytics')} />
+        <StatCard title="Total Revenue"    value={`₹${Number(dashboard?.total_revenue || 0).toLocaleString()}`} icon={DollarSign}  color="indigo" trend={dashboard?.revenue_trend >= 0 ? "up" : "down"} trendValue={Math.abs(dashboard?.revenue_trend || 0)} onClick={() => navigate('/admin/analytics')} />
         <StatCard title="Total Orders"     value={Number(dashboard?.total_orders   || 0).toLocaleString()}       icon={ShoppingCart} color="blue"   trend={dashboard?.orders_trend  >= 0 ? "up" : "down"} trendValue={Math.abs(dashboard?.orders_trend  || 0)} onClick={() => navigate('/admin/orders')} />
         <StatCard title="Total Users"      value={Number(dashboard?.total_users    || 0).toLocaleString()}       icon={Users}        color="green"  trend={dashboard?.users_trend   >= 0 ? "up" : "down"} trendValue={Math.abs(dashboard?.users_trend   || 0)} onClick={() => navigate('/admin/users')} />
-        <StatCard title="Avg. Order Value" value={`$${avgOrder.toFixed(2)}`}                                     icon={TrendingUp}   color="purple" trend="up" trendValue={0} />
+        <StatCard title="Avg. Order Value" value={`₹${avgOrder.toFixed(2)}`}                                     icon={TrendingUp}   color="purple" trend="up" trendValue={0} />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 section-card">
-          <ChartWrapper
-            type="area"
-            title="Revenue Trend"
-            data={monthly}
-            gradientId="adminAreaGrad"
-            xKey="month"
-            yKey="revenue"
-          />
+        <div className="lg:col-span-2">
+          <RevenueTrendChart data={monthly} />
         </div>
-
-        <div className="section-card">
-          <div className="px-5 py-4 border-b border-gray-800">
-            <h3 className="text-sm font-semibold text-gray-200">Sales by Category</h3>
-          </div>
-          <div className="p-5">
-            {categories.length === 0 ? <EmptyState title="No category data yet" /> : (
-              <>
-                <ResponsiveContainer width="100%" height={180}>
-                  <PieChart>
-                    <Pie data={categories} cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={3} dataKey="value">
-                      {categories.map((e) => <Cell key={e.name} fill={e.color} />)}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="space-y-2 mt-2">
-                  {categories.map((c) => (
-                    <div key={c.name} className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full" style={{ background: c.color }} />
-                        <span className="text-gray-400">{c.name}</span>
-                      </div>
-                      <span className="text-gray-200 font-medium">${Number(c.value).toLocaleString()}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+        <SalesFunnelChart data={topProducts} />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
-        <div className="section-card">
-          <div className="px-5 py-4 border-b border-gray-800">
-            <h3 className="text-sm font-semibold text-gray-200">Top Product Performance</h3>
-          </div>
-          <div className="p-5">
-            {topProducts.length === 0 ? <EmptyState title="No product data yet" /> : (
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={topProducts} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1a1a24" horizontal={false} />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: "#6b6b84" }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#9494a8" }} axisLine={false} tickLine={false} width={110} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="sales" fill="#6366f1" radius={[0, 4, 4, 0]} name="sales" />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </div>
-
-        <div className="section-card">
-          <div className="px-5 py-4 border-b border-gray-800">
-            <h3 className="text-sm font-semibold text-gray-200">New Customers (Daily)</h3>
-          </div>
-          <div className="p-5">
-            {dailyCustomers.length === 0 ? <EmptyState title="No customer data yet" /> : (
-              <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={dailyCustomers}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1a1a24" />
-                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#6b6b84" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6b6b84" }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Line type="monotone" dataKey="customers" stroke="#8b5cf6" strokeWidth={2.5} dot={{ fill: "#8b5cf6", r: 3 }} name="customers" />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </div>
+        {categories.length > 0 && <CategoryRadarChart data={categories} />}
+        {topProducts.length > 0 && <ProductScatterChart data={topProducts} />}
       </div>
 
-      <div className="section-card">
-        <div className="px-5 py-4 border-b border-gray-800">
-          <h3 className="text-sm font-semibold text-gray-200">Daily Orders (Last 30 Days)</h3>
-        </div>
-        <div className="p-5">
-          {dailyOrders.length === 0 ? <EmptyState title="No order data yet" /> : (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={dailyOrders}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1a1a24" />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#6b6b84" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: "#6b6b84" }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="orders" fill="#3b82f6" radius={[3, 3, 0, 0]} name="orders" />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-      </div>
+      <OrderRevenueComposedChart ordersData={dailyOrders} revenueData={monthly} />
+
+      <DailyOrdersChart data={dailyOrders} />
     </div>
   );
 }

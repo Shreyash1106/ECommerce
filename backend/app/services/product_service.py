@@ -1,5 +1,5 @@
 from typing import List, Dict, Any, Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, or_, and_, desc, asc
 from fastapi import HTTPException, status
 import os
@@ -39,10 +39,10 @@ def create_product(db: Session, product_in: ProductCreate) -> Product:
     return db_product
 
 def get_products(db: Session, skip: int = 0, limit: int = 100) -> List[Product]:
-    return db.query(Product).offset(skip).limit(limit).all()
+    return db.query(Product).options(joinedload(Product.inventory), joinedload(Product.category)).offset(skip).limit(limit).all()
 
 def get_product_by_id(db: Session, product_id: int) -> Product:
-    product = db.query(Product).filter(Product.id == product_id).first()
+    product = db.query(Product).options(joinedload(Product.inventory), joinedload(Product.category)).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -206,93 +206,7 @@ def get_filter_metadata(db: Session) -> Dict[str, Any]:
         }
     }
 
-    # New: Get filter counts based on current filters
-    def get_filter_counts(
-        db: Session,
-        category_id: Optional[int] = None,
-        brand: Optional[str] = None,
-        min_price: Optional[float] = None,
-        max_price: Optional[float] = None,
-        min_rating: Optional[float] = None,
-        min_discount: Optional[float] = None,
-        in_stock: Optional[bool] = None,
-    ) -> Dict[str, Any]:
-        """Return filter options with product counts respecting current filters.
-        Counts are calculated for categories and brands; price, rating, discount ranges are unchanged.
-        """
-        base_q = db.query(Product).outerjoin(Inventory)
-        if brand:
-            base_q = base_q.filter(Product.brand.ilike(f"%{brand}%"))
-        if min_price is not None:
-            base_q = base_q.filter(Product.price >= min_price)
-        if max_price is not None:
-            base_q = base_q.filter(Product.price <= max_price)
-        if min_rating is not None:
-            base_q = base_q.filter(Product.rating >= min_rating)
-        if min_discount is not None:
-            base_q = base_q.filter(Product.discount_percentage >= min_discount)
-        if in_stock is not None:
-            if in_stock:
-                base_q = base_q.filter(Inventory.quantity > 0)
-            else:
-                base_q = base_q.filter(Inventory.quantity <= 0)
 
-
-        category_counts = (
-            base_q.with_entities(Product.category_id, func.count(Product.id))
-            .group_by(Product.category_id)
-            .all()
-        )
-        cat_count_map = {cat_id: cnt for cat_id, cnt in category_counts if cat_id is not None}
-
-        # Brand counts
-        brand_counts = (
-            base_q.with_entities(Product.brand, func.count(Product.id))
-            .group_by(Product.brand)
-            .all()
-        )
-        brand_count_map = {b: cnt for b, cnt in brand_counts if b}
-
-        categories = db.query(Category).all()
-        brands = db.query(Product.brand).filter(Product.brand.isnot(None)).distinct().all()
-        brand_list = [b[0] for b in brands if b[0]]
-
-        price_stats = db.query(
-            func.min(Product.price).label('min_price'),
-            func.max(Product.price).label('max_price')
-        ).first()
-        rating_stats = db.query(
-            func.min(Product.rating).label('min_rating'),
-            func.max(Product.rating).label('max_rating')
-        ).first()
-        discount_stats = db.query(
-            func.min(Product.discount_percentage).label('min_discount'),
-            func.max(Product.discount_percentage).label('max_discount')
-        ).first()
-
-        return {
-            "categories": [{
-                "id": c.id,
-                "name": c.name,
-                "count": cat_count_map.get(c.id, 0)
-            } for c in categories],
-            "brands": [{
-                "name": b,
-                "count": brand_count_map.get(b, 0)
-            } for b in sorted(brand_list)],
-            "price_range": {
-                "min": float(price_stats.min_price) if price_stats.min_price else 0,
-                "max": float(price_stats.max_price) if price_stats.max_price else 0
-            },
-            "rating_range": {
-                "min": float(rating_stats.min_rating) if rating_stats.min_rating else 0,
-                "max": float(rating_stats.max_rating) if rating_stats.max_rating else 5
-            },
-                            "discount_range": {
-                    "min": float(discount_stats.min_discount) if discount_stats.min_discount else 0,
-                    "max": float(discount_stats.max_discount) if discount_stats.max_discount else 0
-                }
-            }
 def get_filter_counts(
     db: Session,
     category_id: Optional[int] = None,
@@ -379,6 +293,7 @@ def get_filter_counts(
             "max": float(discount_stats.max_discount) if discount_stats.max_discount else 0
         }
     }
+
 
 def get_similar_products(db: Session, product_id: int, limit: int = 8) -> List[Product]:
     """Return products from the same category as the given product, excluding itself.

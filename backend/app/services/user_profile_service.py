@@ -17,8 +17,15 @@ def get_user_profile(db: Session, user_id: int) -> dict:
     )
     return {
         "id": user.id,
-        "name": user.name,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "username": user.username,
         "email": user.email,
+        "phone": user.phone,
+        "avatar_url": user.avatar_url,
+        "role": user.role,
+        "is_verified": user.is_verified,
+        "is_active": user.is_active,
         "created_at": user.created_at,
         "total_orders": total_orders,
         "total_spent": total_spent,

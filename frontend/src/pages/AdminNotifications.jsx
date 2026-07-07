@@ -110,8 +110,8 @@ export default function AdminNotifications() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className={`text-sm font-medium ${!n.is_read ? "text-white" : "text-gray-300"}`}>{meta.title}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{n.message || n.title}</p>
+                      <p className={`text-sm font-medium ${!n.is_read ? "text-white" : "text-gray-300"}`}>{n.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{n.message}</p>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {!n.is_read && <Circle size={7} className="text-indigo-500 fill-indigo-500" />}

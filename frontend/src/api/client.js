@@ -2,16 +2,32 @@ import axios from "axios";
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
+  timeout: 10000,
+  headers: {
+    "Cache-Control": "public, max-age=300",
+  },
 });
 
 client.interceptors.request.use((config) => {
   const token = localStorage.getItem("access_token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  
+  // Add cache headers for GET requests
+  if (config.method === "get") {
+    config.headers["Cache-Control"] = "public, max-age=300";
+  }
+  
   return config;
 });
 
 client.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    // Add cache headers to response
+    if (res.config.method === "get") {
+      res.headers["Cache-Control"] = "public, max-age=300";
+    }
+    return res;
+  },
   (err) => {
     if (err.response?.status === 401) {
       const requestUrl = err.config?.url || "";

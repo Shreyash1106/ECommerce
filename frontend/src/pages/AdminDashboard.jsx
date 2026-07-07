@@ -94,15 +94,16 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-900 text-white">
+      <div className="min-h-screen text-white pb-10">
         {/* Header */}
-        <header className="px-6 py-4 border-b border-gray-800">
-          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <header className="px-8 py-8">
+          <h1 className="text-3xl font-bold tracking-tight text-white">Admin Dashboard</h1>
+          <p className="text-gray-400 text-sm mt-1">Overview of your store's performance</p>
         </header>
 
         {/* Cards Section */}
-        <section className="p-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <section className="px-8 pb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {stats.map((s) => (
               <StatCard
                 key={s.title}
@@ -123,17 +124,17 @@ export default function AdminDashboard() {
         </section>
 
         {/* Charts Section */}
-        <section className="p-6">
-          <div className="grid lg:grid-cols-3 gap-4">
+        <section className="px-8 pb-6">
+          <div className="grid lg:grid-cols-3 gap-6">
             {/* Revenue Overview */}
-            <div className="lg:col-span-2 section-card">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
+            <div className="lg:col-span-2 bg-gray-900/40 backdrop-blur-md border border-white/5 rounded-2xl shadow-xl overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 bg-white/[0.02]">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-200">Revenue Overview</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">Monthly revenue</p>
+                  <h3 className="text-base font-bold text-white tracking-tight">Revenue Overview</h3>
+                  <p className="text-xs text-gray-400 mt-1">Monthly revenue</p>
                 </div>
-                <span className="flex items-center gap-1 text-xs text-green-400 font-medium">
-                  <ArrowUpRight size={13} /> {data.revenue_trend || 0}%
+                <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
+                  <ArrowUpRight size={14} /> {data.revenue_trend || 0}%
                 </span>
               </div>
               <ChartWrapper
@@ -145,12 +146,12 @@ export default function AdminDashboard() {
             </div>
 
             {/* Orders Bar Chart */}
-            <div className="section-card">
-              <div className="px-5 py-4 border-b border-gray-800">
-                <h3 className="text-sm font-semibold text-gray-200">Orders</h3>
-                <p className="text-xs text-gray-500 mt-0.5">Monthly order count</p>
+            <div className="bg-gray-900/40 backdrop-blur-md border border-white/5 rounded-2xl shadow-xl overflow-hidden">
+              <div className="px-6 py-5 border-b border-white/5 bg-white/[0.02]">
+                <h3 className="text-base font-bold text-white tracking-tight">Orders</h3>
+                <p className="text-xs text-gray-400 mt-1">Monthly order count</p>
               </div>
-              <div className="p-5">
+              <div className="p-6">
                 {(data.monthly_orders?.length ?? 0) === 0 ? (
                   <EmptyState title="No order data yet" />
                 ) : (
@@ -164,7 +165,7 @@ export default function AdminDashboard() {
                       <Bar
                         dataKey="orders"
                         fill="url(#orderGrad)"
-                        radius={[3, 3, 0, 0]}
+                        radius={[4, 4, 0, 0]}
                         isAnimationActive={true}
                         animationBegin={0}
                         animationDuration={800}
@@ -177,87 +178,92 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        {/* Recent Orders Section */}
-        <section className="p-6">
-          <div className="section-card">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
-              <h3 className="text-sm font-semibold text-gray-200">Recent Orders</h3>
-              <Link
-                to="/admin/orders"
-                className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
-              >
-                View all <ExternalLink size={11} />
-              </Link>
-            </div>
-            {recentOrders.length === 0 ? (
-              <EmptyState title="No orders yet" />
-            ) : (
-              <table className="data-table w-full">
-                <thead>
-                  <tr className="border-b border-gray-800">
-                    <th>Order</th>
-                    <th>Customer</th>
-                    <th>Product</th>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
-                  {recentOrders.map((o) => (
-                    <tr key={o.id}>
-                      <td className="font-mono text-indigo-400 font-semibold">#{o.id}</td>
-                      <td className="text-gray-200">{o.customer || `User #${o.user_id}`}</td>
-                      <td className="text-gray-500 text-xs">{o.product_name || `Product #${o.product_id}`}</td>
-                      <td className="text-gray-500 text-xs">
-                        {o.created_at ? new Date(o.created_at).toLocaleDateString() : "—"}
-                      </td>
-                      <td className="font-semibold text-white">
-                        ${Number(o.total_price || 0).toFixed(2)}
-                      </td>
-                      <td>
-                        <Badge status={(o.status || "pending").toLowerCase()}>{o.status || "Pending"}</Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </section>
-
-        {/* Users (Top Products) Section */}
-        <section className="p-6">
-          <div className="section-card">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
-              <h3 className="text-sm font-semibold text-gray-200">Top Products</h3>
-              <Link
-                to="/admin/products"
-                className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
-              >
-                View all
-              </Link>
-            </div>
-            {topProducts.length === 0 ? (
-              <EmptyState title="No products yet" />
-            ) : (
-              <div className="divide-y divide-gray-800">
-                {topProducts.map((p, i) => (
-                  <div key={p.name || i} className="flex items-center gap-3 px-5 py-3.5">
-                    <div className="w-7 h-7 rounded-lg bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-400 flex-shrink-0">
-                      {i + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gray-200 truncate">{p.name}</p>
-                      <p className="text-[11px] text-gray-500">{p.sales || 0} sold</p>
-                    </div>
-                    <p className="text-xs font-semibold text-white">{Number(p.revenue || 0).toLocaleString()}</p>
-                  </div>
-                ))}
+        {/* Bottom Section */}
+        <div className="grid lg:grid-cols-3 gap-6 px-8">
+          {/* Recent Orders Section */}
+          <section className="lg:col-span-2">
+            <div className="bg-gray-900/40 backdrop-blur-md border border-white/5 rounded-2xl shadow-xl overflow-hidden h-full">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 bg-white/[0.02]">
+                <h3 className="text-base font-bold text-white tracking-tight">Recent Orders</h3>
+                <Link
+                  to="/admin/orders"
+                  className="flex items-center gap-1 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors bg-indigo-500/10 px-3 py-1.5 rounded-lg hover:bg-indigo-500/20"
+                >
+                  View all <ExternalLink size={12} />
+                </Link>
               </div>
-            )}
-          </div>
-        </section>
+              {recentOrders.length === 0 ? (
+                <EmptyState title="No orders yet" />
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-white/5 bg-white/[0.01]">
+                        <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Order</th>
+                        <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Customer</th>
+                        <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Product</th>
+                        <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Amount</th>
+                        <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {recentOrders.map((o) => (
+                        <tr key={o.id} className="hover:bg-white/[0.02] transition-colors group">
+                          <td className="px-6 py-4 font-mono text-sm text-indigo-400 font-semibold">#{o.id}</td>
+                          <td className="px-6 py-4 text-sm font-medium text-gray-200">{o.customer || `User #${o.user_id}`}</td>
+                          <td className="px-6 py-4 text-sm text-gray-400 truncate max-w-[150px]">{o.product_name || `Product #${o.product_id}`}</td>
+                          <td className="px-6 py-4 text-sm text-gray-400">
+                            {o.created_at ? new Date(o.created_at).toLocaleDateString() : "—"}
+                          </td>
+                          <td className="px-6 py-4 text-sm font-bold text-white text-right">
+                            ${Number(o.total_price || 0).toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <Badge status={(o.status || "pending").toLowerCase()}>{o.status || "Pending"}</Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Top Products Section */}
+          <section>
+            <div className="bg-gray-900/40 backdrop-blur-md border border-white/5 rounded-2xl shadow-xl overflow-hidden h-full">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 bg-white/[0.02]">
+                <h3 className="text-base font-bold text-white tracking-tight">Top Products</h3>
+                <Link
+                  to="/admin/products"
+                  className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors bg-indigo-500/10 px-3 py-1.5 rounded-lg hover:bg-indigo-500/20"
+                >
+                  View all
+                </Link>
+              </div>
+              {topProducts.length === 0 ? (
+                <EmptyState title="No products yet" />
+              ) : (
+                <div className="divide-y divide-white/5 p-2">
+                  {topProducts.map((p, i) => (
+                    <div key={p.name || i} className="flex items-center gap-4 px-4 py-3.5 hover:bg-white/[0.02] rounded-xl transition-colors">
+                      <div className="w-10 h-10 rounded-xl bg-gray-800 border border-white/5 flex items-center justify-center text-sm font-bold text-gray-300 flex-shrink-0 shadow-inner">
+                        {i + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-200 truncate">{p.name}</p>
+                        <p className="text-xs font-medium text-indigo-400/80 mt-0.5">{p.sales || 0} units sold</p>
+                      </div>
+                      <p className="text-sm font-bold text-white">${Number(p.revenue || 0).toLocaleString()}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
       </div>
     </>
   );

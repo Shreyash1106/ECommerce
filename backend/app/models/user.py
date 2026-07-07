@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, func
+from sqlalchemy import Column, Integer, String, DateTime, func, Boolean
 from sqlalchemy.orm import relationship
 from app.database.base import Base
 
@@ -6,17 +6,20 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(length=255), nullable=False)
+    first_name = Column(String(length=100), nullable=False)
+    last_name = Column(String(length=100), nullable=False)
+    username = Column(String(length=50), unique=True, index=True, nullable=False)
     email = Column(String(length=255), unique=True, index=True, nullable=False)
+    phone = Column(String(length=20), unique=True, index=True, nullable=True)
+    avatar_url = Column(String(length=1024), nullable=True)
     password = Column(String(length=255), nullable=False)
     role = Column(String(50), default="customer", nullable=False)  # admin, vendor, customer
-    notify_new_orders = Column(Integer, default=1, nullable=False)
-    notify_low_stock_alerts = Column(Integer, default=1, nullable=False)
-    notify_user_activity = Column(Integer, default=1, nullable=False)
-    notify_system_updates = Column(Integer, default=1, nullable=False)
-    is_verified = Column(Integer, default=0, nullable=False)
-    is_admin = Column(Integer, default=0, nullable=False)
-    is_active = Column(Integer, default=1, nullable=False)
+    notify_new_orders = Column(Boolean, default=True, nullable=False)
+    notify_low_stock_alerts = Column(Boolean, default=True, nullable=False)
+    notify_user_activity = Column(Boolean, default=True, nullable=False)
+    notify_system_updates = Column(Boolean, default=True, nullable=False)
+    is_verified = Column(Boolean, default=False, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Relationships

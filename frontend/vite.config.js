@@ -20,25 +20,28 @@ export default defineConfig({
       host: 'localhost',
       protocol: 'ws',
     },
-    watch: {
-      usePolling: true,
-      interval: 100,
-    },
-    proxy: {
-      '/auth': 'http://localhost:8000',
-      '/products': 'http://localhost:8000',
-      '/orders': 'http://localhost:8000',
-      '/notifications': 'http://localhost:8000',
-      '/analytics': 'http://localhost:8000',
-      '/search': 'http://localhost:8000',
-    },
   },
   optimizeDeps: {
-    exclude: [],
+    include: ['react', 'react-dom', 'react-router-dom', 'zustand', '@tanstack/react-query', 'axios'],
   },
   build: { 
     outDir: 'dist',
-    cssCodeSplit: false,
-    sourcemap: true,
+    cssCodeSplit: true,
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['react', 'react-dom', 'react-router-dom'],
+          'state': ['zustand', '@tanstack/react-query'],
+          'http': ['axios'],
+        },
+      },
+    },
   },
 });

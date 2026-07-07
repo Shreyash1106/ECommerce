@@ -7,6 +7,7 @@ class Notification(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    title = Column(String(length=100), nullable=False)
     message = Column(String(length=255), nullable=False)
     type = Column(String(length=50), nullable=False)  # e.g., 'order', 'stock', 'system'
     is_read = Column(Boolean, default=False, nullable=False)

@@ -1,5 +1,5 @@
 {
-  "name": "ecommarse-frontend",
+  "name": "ecommerce-frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,14 +10,20 @@
     "test:e2e": "cypress run"
   },
   "dependencies": {
-    "@tanstack/react-query": "^4.28.0",
+    "@hookform/resolvers": "^5.4.0",
+    "@tanstack/react-query": "^4.44.0",
     "axios": "^1.7.2",
-    "lucide-react": "^1.21.0",
+    "browser-image-compression": "^2.0.2",
+    "lucide-react": "^1.23.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-dropzone": "^15.0.0",
+    "react-easy-crop": "^6.1.0",
+    "react-hook-form": "^7.81.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^6.16.0",
     "recharts": "^3.8.1",
+    "zod": "^4.4.3",
     "zustand": "^4.4.1"
   },
   "devDependencies": {

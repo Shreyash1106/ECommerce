@@ -7,7 +7,7 @@ from app.database.session import engine
 from app.database.base import Base
 import app.models
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 def run_migrations():
@@ -67,7 +67,8 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"]
+    expose_headers=["*"],
+    max_age=3600
 )
 
 try:
@@ -86,7 +87,7 @@ app.include_router(search.router,            prefix="/api/search")
 app.include_router(inventory.router,         prefix="/api")
 app.include_router(reports.router,           prefix="/api")
 app.include_router(email_verification.router)
-app.include_router(admin.router,             prefix="/api")
+app.include_router(admin.router,             prefix="/api/admin")
 
 @app.get("/")
 def root():

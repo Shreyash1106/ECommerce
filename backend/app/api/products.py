@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
 from app.services import product_service
 from app.database.session import get_db
-from app.core.security import get_current_user, get_current_admin_user
+from app.core.security import get_current_user, get_current_vendor_or_admin_user
 from app.models.user import User
 
 router = APIRouter(tags=["Products"])
@@ -14,9 +14,9 @@ router = APIRouter(tags=["Products"])
 def create_product(
     product_in: ProductCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+    current_user: User = Depends(get_current_vendor_or_admin_user)
 ):
-    """Create a new product (admin only)."""
+    """Create a new product (admin/vendor only)."""
     try:
         return product_service.create_product(db, product_in)
     except Exception as e:
@@ -52,9 +52,9 @@ def update_product(
     product_id: int = Path(..., gt=0),
     product_in: ProductUpdate = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+    current_user: User = Depends(get_current_vendor_or_admin_user)
 ):
-    """Update a product (admin only)."""
+    """Update a product (admin/vendor only)."""
     try:
         return product_service.update_product(db, product_id, product_in)
     except HTTPException:
@@ -66,9 +66,9 @@ def update_product(
 def delete_product(
     product_id: int = Path(..., gt=0),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+    current_user: User = Depends(get_current_vendor_or_admin_user)
 ):
-    """Delete a product (admin only)."""
+    """Delete a product (admin/vendor only)."""
     try:
         product_service.delete_product(db, product_id)
         return None
@@ -82,9 +82,9 @@ def upload_product_image(
     product_id: int = Path(..., gt=0),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+    current_user: User = Depends(get_current_vendor_or_admin_user)
 ):
-    """Upload product image (admin only)."""
+    """Upload product image (admin/vendor only)."""
     try:
         content = file.file.read()
         return product_service.upload_product_image(db, product_id, file.filename, content)

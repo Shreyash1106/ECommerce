@@ -11,7 +11,7 @@ export function connectWebSocket(token) {
   socket = new WebSocket(wsUrl);
 
   socket.onopen = () => {
-    console.log("WebSocket connected");
+    // WebSocket connected
   };
 
   socket.onmessage = (event) => {
@@ -24,7 +24,7 @@ export function connectWebSocket(token) {
   };
 
   socket.onclose = () => {
-    console.log("WebSocket closed");
+    // WebSocket closed
     socket = null;
     // optional reconnection logic could be added here
   };

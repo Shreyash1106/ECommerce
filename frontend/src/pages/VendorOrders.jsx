@@ -66,74 +66,76 @@ export default function VendorOrders() {
   );
 
   return (
-    <div className="page-container">
-      <div>
-        <h1 className="text-lg font-semibold text-white">My Orders</h1>
-        <p className="text-xs text-gray-500 mt-0.5">{filtered.length} orders</p>
+    <div className="min-h-screen text-white pb-10 px-8 py-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-white">My Orders</h1>
+          <p className="text-gray-400 text-sm mt-1">{filtered.length} total orders</p>
+        </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-3 mb-8">
         {STATUSES.map((s) => (
           <button key={s} onClick={() => { setStatusFilter(s); setPage(1); }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              statusFilter === s ? "bg-indigo-600 text-white" : "bg-gray-800 border border-gray-700 text-gray-400 hover:text-white"
+            className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 border ${
+              statusFilter === s 
+                ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-400 shadow-[0_0_15px_rgba(79,70,229,0.15)]" 
+                : "bg-gray-900/40 backdrop-blur-md border-white/5 text-gray-400 hover:text-white hover:bg-white/5 hover:border-white/10"
             }`}>
             {s}
           </button>
         ))}
       </div>
 
-      <div className="relative max-w-xs">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-        <input
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Search…"
-          className="input-field pl-9 h-9 text-sm w-full"
-        />
+      <div className="relative max-w-sm mb-6">
+        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+        <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder="Search by name or ID…" className="w-full bg-gray-900/50 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all" />
       </div>
 
-      <div className="section-card">
+      <div className="bg-gray-900/40 backdrop-blur-md border border-white/5 rounded-2xl shadow-xl overflow-hidden">
         {filtered.length === 0 ? (
-          <EmptyState
-            icon={ShoppingCart}
-            title="No orders found"
-            description={totalOrders === 0 ? "No orders have been placed yet." : "No orders match your filter."}
-          />
+          <div className="p-8">
+            <EmptyState
+              icon={ShoppingCart}
+              title="No orders found"
+              description={totalOrders === 0 ? "No orders have been placed yet." : "No orders match your filter."}
+            />
+          </div>
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="data-table w-full">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-gray-800">
-                    <th>Order ID</th>
-                    <th>Customer</th>
-                    <th>Product</th>
-                    <th>Date</th>
-                    <th>Qty</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th>Update</th>
+                  <tr className="border-b border-white/5 bg-white/[0.01]">
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Order ID</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Customer</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Product</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Qty</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Total</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Update</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-800">
+                <tbody className="divide-y divide-white/5">
                   {paginated.map((o) => (
-                    <tr key={o.id}>
-                      <td className="font-mono text-indigo-400 font-semibold">#{o.id}</td>
-                      <td>
-                        <p className="text-sm font-medium text-gray-200">{o.customer}</p>
-                        {o.email && <p className="text-xs text-gray-500">{o.email}</p>}
+                    <tr key={o.id} className="hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-6 py-4 font-mono text-sm text-indigo-400 font-bold">#{o.id}</td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-bold text-gray-200 group-hover:text-white transition-colors">{o.customer}</p>
+                        {o.email && <p className="text-xs font-medium text-gray-500 mt-0.5">{o.email}</p>}
                       </td>
-                      <td className="text-gray-300 text-xs">{o.product_name}</td>
-                      <td className="text-gray-500 text-xs">{o.date}</td>
-                      <td className="text-gray-400">{o.items}</td>
-                      <td className="font-semibold text-white">${Number(o.total).toFixed(2)}</td>
-                      <td><Badge status={o.status.toLowerCase()}>{o.status}</Badge></td>
-                      <td>
+                      <td className="px-6 py-4 text-gray-300 text-sm font-medium">{o.product_name}</td>
+                      <td className="px-6 py-4 text-gray-400 text-sm font-medium">{o.date}</td>
+                      <td className="px-6 py-4 text-gray-300 text-sm">{o.items}</td>
+                      <td className="px-6 py-4 font-bold text-white">${Number(o.total).toFixed(2)}</td>
+                      <td className="px-6 py-4"><Badge status={o.status.toLowerCase()}>{o.status}</Badge></td>
+                      <td className="px-6 py-4">
                         <select
                           value={o.status}
                           onChange={(e) => statusMutation.mutate({ orderId: o.id, status: e.target.value })}
-                          className="bg-gray-800 border border-gray-700 text-gray-300 text-xs rounded px-2 py-1"
+                          className="bg-gray-900/50 border border-white/10 text-gray-300 text-sm font-medium rounded-xl px-3 py-1.5 focus:outline-none focus:border-indigo-500/50 transition-all hover:bg-white/5 cursor-pointer"
                         >
                           {STATUSES.filter((s) => s !== "All").map((s) => (
                             <option key={s} value={s}>{s}</option>
@@ -145,7 +147,9 @@ export default function VendorOrders() {
                 </tbody>
               </table>
             </div>
-            <Pagination page={page} total={filtered.length} pageSize={PAGE_SIZE} onChange={setPage} />
+            <div className="p-4 border-t border-white/5 bg-white/[0.01]">
+              <Pagination page={page} total={filtered.length} pageSize={PAGE_SIZE} onChange={setPage} />
+            </div>
           </>
         )}
       </div>

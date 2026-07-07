@@ -12,3 +12,6 @@ pydantic-settings>=2.5.0
 python-multipart>=0.0.6
 itsdangerous>=2.2.0
 bcrypt>=4.1.2
+cloudinary>=1.39.0
+requests>=2.31.0
+aiofiles>=23.2.0

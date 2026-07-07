@@ -18,6 +18,7 @@ const PAGE_TITLES = {
   "/vendor/orders": "My Orders",
   "/vendor/analytics": "Analytics",
   "/settings": "Settings",
+  "/profile": "Profile",
 };
 
 const AUTH_PATHS = ["/login", "/register", "/forgot-password"];
@@ -27,8 +28,6 @@ export default function Header() {
   const { unreadCount, setUnreadCount } = useStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const [dropOpen, setDropOpen] = React.useState(false);
-  const dropRef = useRef(null);
 
   useQuery({
     queryKey: ["notifications"],
@@ -38,23 +37,24 @@ export default function Header() {
     retry: 1,
   });
 
-  // ✅ useEffect MUST be before any conditional return
-  useEffect(() => {
-    const handler = (e) => {
-      if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   const isAuthPage = AUTH_PATHS.includes(location.pathname);
   if (isAuthPage) return null;
 
   const title = PAGE_TITLES[location.pathname] || "CommerceOS";
   const hideSearch = location.pathname === "/settings";
-  const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
-    : "U";
+  
+  // Get user display name from first_name and last_name
+  const displayName = user?.first_name && user?.last_name 
+    ? `${user.first_name} ${user.last_name}` 
+    : user?.username || "User";
+  
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   const handleLogout = () => {
     logout();
@@ -62,70 +62,52 @@ export default function Header() {
   };
 
   return (
-    <header className="h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-5 flex-shrink-0 z-40">
-      <h1 className="text-sm font-semibold text-white">{title}</h1>
+    <header className="h-16 bg-gray-950/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-6 flex-shrink-0 z-40 sticky top-0">
+      <h1 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight">{title}</h1>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         {/* Notifications bell */}
         <button
           onClick={() => navigate("/admin/notifications")}
-          className="relative p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+          className="relative p-2.5 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-all duration-200 border border-transparent hover:border-white/10 shadow-sm"
         >
-          <Bell size={17} />
+          <Bell size={18} />
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 w-4 h-4 bg-indigo-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center leading-none">
+            <span className="absolute top-1 right-1 w-4 h-4 bg-indigo-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center leading-none ring-2 ring-gray-950 shadow-md animate-pulse">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </button>
 
-        {/* User dropdown */}
-        <div className="relative" ref={dropRef}>
-          <button
-            onClick={() => setDropOpen((o) => !o)}
-            className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+        <div className="w-px h-6 bg-gray-800 hidden md:block mx-1"></div>
+
+        {/* User Profile */}
+        <button
+          onClick={() => navigate("/profile")}
+          className="flex items-center gap-3 pl-2 pr-4 py-1.5 rounded-xl hover:bg-white/5 transition-all duration-200 border border-transparent hover:border-white/10 group"
+        >
+          {user?.avatar_url ? (
+            <img src={user.avatar_url} alt="Profile" className="w-8 h-8 rounded-lg object-cover flex-shrink-0 shadow-sm ring-1 ring-white/10 group-hover:ring-indigo-500/50 transition-all" />
+          ) : (
+            <div className="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-xs font-bold text-indigo-400 flex-shrink-0 group-hover:bg-indigo-600/30 transition-all">
               {initials}
             </div>
-            <div className="hidden md:flex flex-col items-start">
-              <span className="text-xs font-medium text-gray-200 leading-none">{user?.name || "User"}</span>
-              <span className="text-[10px] text-gray-500 capitalize leading-none mt-0.5">{user?.role || "admin"}</span>
-            </div>
-            <ChevronDown size={13} className="text-gray-500 hidden md:block" />
-          </button>
-
-          {dropOpen && (
-            <div className="absolute right-0 top-full mt-1.5 w-48 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in">
-              <div className="px-4 py-3 border-b border-gray-800">
-                <p className="text-xs font-semibold text-white truncate">{user?.name}</p>
-                <p className="text-[11px] text-gray-500 truncate">{user?.email}</p>
-              </div>
-              <div className="py-1">
-                <button
-                  onClick={() => { navigate("/settings"); setDropOpen(false); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
-                >
-                  <User size={13} /> Profile
-                </button>
-                <button
-                  onClick={() => { navigate("/settings"); setDropOpen(false); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
-                >
-                  <Settings size={13} /> Settings
-                </button>
-              </div>
-              <div className="border-t border-gray-800 py-1">
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                >
-                  <LogOut size={13} /> Sign out
-                </button>
-              </div>
-            </div>
           )}
-        </div>
+          <div className="hidden md:flex flex-col items-start">
+            <span className="text-sm font-semibold text-gray-200 leading-none group-hover:text-white transition-colors">{displayName}</span>
+            <span className="text-[10px] text-gray-500 font-medium capitalize leading-none mt-1">{user?.role || "admin"}</span>
+          </div>
+          <ChevronDown size={14} className="text-gray-500 ml-1 group-hover:text-gray-300 hidden md:block transition-colors" />
+        </button>
+
+        {/* Sign Out */}
+        <button
+          onClick={handleLogout}
+          title="Sign out"
+          className="relative p-2.5 rounded-xl hover:bg-red-500/10 text-gray-400 hover:text-red-400 transition-all duration-200 ml-1 group"
+        >
+          <LogOut size={18} className="group-hover:scale-110 transition-transform" />
+        </button>
       </div>
     </header>
   );

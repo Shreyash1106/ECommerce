@@ -298,7 +298,7 @@ export default function SearchResults() {
   return (
     <>
       <style>{rangeSliderStyle}</style>
-      <div className="page-container">
+      <div className="min-h-screen text-white pb-10 px-4 sm:px-8 py-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
@@ -309,28 +309,28 @@ export default function SearchResults() {
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {/* View Toggle */}
-          <div className="flex bg-gray-800 rounded-lg p-1">
+          <div className="flex bg-gray-900/40 backdrop-blur-md border border-white/5 rounded-xl p-1 shadow-inner">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-2 rounded-md transition-colors ${viewMode === "grid" ? "bg-indigo-500 text-white" : "text-gray-400 hover:text-white"}`}
+              className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-indigo-600 text-white shadow-md" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
             >
               <Grid size={18} />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-2 rounded-md transition-colors ${viewMode === "list" ? "bg-indigo-500 text-white" : "text-gray-400 hover:text-white"}`}
+              className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-indigo-600 text-white shadow-md" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
             >
               <List size={18} />
             </button>
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 bg-gray-900/40 backdrop-blur-md border border-white/5 hover:bg-white/5 text-white rounded-xl transition-all shadow-lg"
           >
             <Filter size={18} />
-            <span>{showFilters ? "Hide Filters" : "Show Filters"}</span>
+            <span className="text-sm font-semibold">{showFilters ? "Hide Filters" : "Show Filters"}</span>
           </button>
         </div>
       </div>
@@ -338,7 +338,7 @@ export default function SearchResults() {
       {/* Search Bar with Autocomplete */}
       <div className="relative mb-6">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
             value={searchQuery}
@@ -346,7 +346,7 @@ export default function SearchResults() {
             onFocus={() => setShowSuggestions(searchQuery.length >= 2)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             placeholder="Search products by name, description, or brand..."
-            className="w-full pl-10 pr-12 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500"
+            className="w-full pl-12 pr-12 py-3.5 bg-gray-900/50 backdrop-blur-md border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-lg"
           />
           {searchQuery && (
             <button
@@ -360,12 +360,12 @@ export default function SearchResults() {
 
         {/* Autocomplete Suggestions */}
         {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto divide-y divide-white/5">
             {suggestions.map((suggestion, index) => (
               <div
                 key={index}
                 onClick={() => handleSuggestionClick(suggestion)}
-                className="px-4 py-3 hover:bg-gray-700 cursor-pointer text-white text-sm"
+                className="px-5 py-3.5 hover:bg-white/[0.02] cursor-pointer text-gray-200 hover:text-white transition-colors text-sm"
               >
                 {suggestion}
               </div>
@@ -447,11 +447,11 @@ export default function SearchResults() {
         </div>
       )}
 
-      <div className="flex gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Filter Sidebar */}
         {showFilters && (
-          <div className="w-72 flex-shrink-0">
-            <div className="section-card p-4 space-y-6">
+          <div className="w-full lg:w-72 flex-shrink-0">
+            <div className="bg-gray-900/40 backdrop-blur-md border border-white/5 rounded-2xl p-5 space-y-6 shadow-xl sticky top-24">
               {/* Clear Filters */}
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-white">Filters</h3>
@@ -641,11 +641,11 @@ export default function SearchResults() {
         {/* Results Grid */}
         <div className="flex-1">
           {isLoading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="section-card animate-pulse">
-                  <div className="h-36 bg-gray-800 rounded-t-xl"></div>
-                  <div className="p-4 space-y-3">
+                <div key={i} className="bg-gray-900/40 backdrop-blur-md rounded-2xl border border-white/5 animate-pulse overflow-hidden">
+                  <div className="h-40 bg-gray-800/50"></div>
+                  <div className="p-5 space-y-3">
                     <div className="h-4 bg-gray-700 rounded"></div>
                     <div className="h-3 bg-gray-700 rounded w-3/4"></div>
                     <div className="h-5 bg-gray-700 rounded w-1/2"></div>
@@ -654,7 +654,7 @@ export default function SearchResults() {
               ))}
             </div>
           ) : products.length === 0 ? (
-            <div className="section-card">
+            <div className="bg-gray-900/40 backdrop-blur-md rounded-2xl border border-white/5 p-8">
               <EmptyState
                 icon={Search}
                 title="No products found"
@@ -663,39 +663,39 @@ export default function SearchResults() {
             </div>
           ) : (
             <>
-              <div className={viewMode === "grid" ? "grid sm:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-4"}>
+              <div className={viewMode === "grid" ? "grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "space-y-4"}>
                 {products.map((p) => (
                   viewMode === "grid" ? (
-                    <div key={p.id} onClick={() => openQuickView(p.id)} className="section-card hover:border-gray-700 transition-colors block relative cursor-pointer">
+                    <div key={p.id} onClick={() => openQuickView(p.id)} className="bg-gray-900/40 backdrop-blur-md rounded-2xl border border-white/5 hover:border-white/10 shadow-lg hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 overflow-hidden cursor-pointer relative flex flex-col h-full">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleWishlist(p.id);
                         }}
-                        className="absolute top-2 right-2 z-10 p-2 bg-gray-900/50 hover:bg-gray-900 rounded-full transition-colors"
+                        className="absolute top-3 right-3 z-10 p-2 bg-gray-950/40 backdrop-blur-md hover:bg-gray-900/60 rounded-full transition-all opacity-0 group-hover:opacity-100"
                       >
                         <Heart
                           size={18}
                           className={wishlist.has(p.id) ? "fill-red-500 text-red-500" : "text-white"}
                         />
                       </button>
-                      <div className="h-36 bg-gray-800 flex items-center justify-center rounded-t-xl overflow-hidden">
+                      <div className="h-44 bg-gray-800/50 flex items-center justify-center overflow-hidden relative">
                         {p.image_url ? (
-                          <AppImage src={p.image_url} alt={p.name} variant="product" className="w-full h-full object-cover rounded-t-xl" />
+                          <AppImage src={p.image_url} alt={p.name} variant="product" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         ) : (
                           <Package size={48} className="text-gray-600" />
                         )}
                         {p.discount_percentage > 0 && (
-                          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                          <div className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg uppercase tracking-wider">
                             {p.discount_percentage}% OFF
                           </div>
                         )}
                         {p.inventory?.quantity > 0 ? (
-                          <div className="absolute bottom-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                          <div className="absolute bottom-3 left-3 bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg uppercase tracking-wider">
                             In Stock
                           </div>
                         ) : (
-                          <div className="absolute bottom-2 left-2 bg-gray-500 text-white text-xs font-bold px-2 py-1 rounded">
+                          <div className="absolute bottom-3 left-3 bg-gray-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg uppercase tracking-wider">
                             Out of Stock
                           </div>
                         )}
@@ -729,16 +729,16 @@ export default function SearchResults() {
                       </div>
                     </div>
                   ) : (
-                    <div key={p.id} onClick={() => openQuickView(p.id)} className="section-card hover:border-gray-700 transition-colors block relative cursor-pointer">
-                      <div className="flex gap-4 p-4">
-                        <div className="w-32 h-32 bg-gray-800 flex items-center justify-center rounded-lg overflow-hidden flex-shrink-0 relative">
+                    <div key={p.id} onClick={() => openQuickView(p.id)} className="bg-gray-900/40 backdrop-blur-md rounded-2xl border border-white/5 hover:border-white/10 shadow-lg hover:shadow-2xl transition-all duration-300 block relative cursor-pointer overflow-hidden group hover:-translate-y-1">
+                      <div className="flex gap-5 p-5">
+                        <div className="w-40 h-40 bg-gray-800/50 flex items-center justify-center rounded-xl overflow-hidden flex-shrink-0 relative">
                           {p.image_url ? (
-                            <AppImage src={p.image_url} alt={p.name} variant="product" className="w-full h-full object-cover rounded-lg" />
+                            <AppImage src={p.image_url} alt={p.name} variant="product" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           ) : (
                             <Package size={48} className="text-gray-600" />
                           )}
                           {p.discount_percentage > 0 && (
-                            <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                            <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg uppercase tracking-wider">
                               {p.discount_percentage}% OFF
                             </div>
                           )}

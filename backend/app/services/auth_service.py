@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 
 from app.models.user import User
 from app.schemas.user import UserCreate
+from app.constants.roles import REGISTRATION_ALLOWED_ROLES
 
 PASSWORD_STRENGTH_REGEX = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$")
 
@@ -35,7 +36,9 @@ def authenticate_user(db: Session, email: str, password: str) -> Union[User, boo
 def register_user(db: Session, user_in: UserCreate) -> User:
     """Register a new user."""
     normalized_email = user_in.email.strip().lower()
-    normalized_name = user_in.name.strip()
+    normalized_username = user_in.username.strip().lower()
+    normalized_first_name = user_in.first_name.strip()
+    normalized_last_name = user_in.last_name.strip()
 
     # Check if email already exists
     existing_user = db.query(User).filter(User.email == normalized_email).first()
@@ -45,16 +48,44 @@ def register_user(db: Session, user_in: UserCreate) -> User:
             detail="Email already registered"
         )
     
+    # Check if username already exists
+    existing_username = db.query(User).filter(User.username == normalized_username).first()
+    if existing_username:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already taken"
+        )
+    
+    # Check if phone already exists (if provided)
+    if user_in.phone:
+        normalized_phone = user_in.phone.strip()
+        existing_phone = db.query(User).filter(User.phone == normalized_phone).first()
+        if existing_phone:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Phone number already registered"
+            )
+    
+    # Validate role - only allow registration with specific roles
+    role = (user_in.role or "customer").strip().lower()
+    if role not in REGISTRATION_ALLOWED_ROLES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid role. Allowed roles during registration: {', '.join(sorted(REGISTRATION_ALLOWED_ROLES))}"
+        )
+    
     # Hash password
     hashed_password = get_password_hash(user_in.password)
     
     # Create user
     db_user = User(
-        name=normalized_name,
+        first_name=normalized_first_name,
+        last_name=normalized_last_name,
+        username=normalized_username,
         email=normalized_email,
+        phone=user_in.phone.strip() if user_in.phone else None,
         password=hashed_password,
-        role=(user_in.role or "customer").strip().lower(),
-        is_admin=0
+        role=role
     )
     
     # Save to database

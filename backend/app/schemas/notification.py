@@ -2,6 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 
 class NotificationBase(BaseModel):
+    title: str = Field(..., description="Notification title")
     message: str = Field(..., description="Notification message text")
     type: str = Field(..., description="Notification type, e.g., 'order', 'stock', 'system'")
     is_read: bool = Field(default=False, description="Read status of the notification")

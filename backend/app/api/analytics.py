@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, cast, Date
 from datetime import datetime, timedelta
 from app.database.session import get_db
-from app.core.security import get_current_user, get_current_admin_user
+from app.core.security import get_current_user, get_current_admin_user, get_current_vendor_user
 from app.models.user import User
 from app.models.order import Order
 from app.models.product import Product
@@ -21,7 +21,7 @@ router = APIRouter(tags=["Analytics"])
 @router.get("/dashboard")
 def get_admin_dashboard(
     db: Session = Depends(get_db),
-
+    current_user: User = Depends(get_current_admin_user)
 ):
     try:
         summary = analytics_service.get_dashboard_summary(db)
@@ -67,7 +67,7 @@ def get_admin_dashboard(
 @router.get("/vendor")
 def get_vendor_analytics(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_vendor_user)
 ):
     try:
         summary = analytics_service.get_dashboard_summary(db)

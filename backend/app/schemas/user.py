@@ -1,16 +1,22 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Literal
 from pydantic import BaseModel, EmailStr, Field, ConfigDict, model_validator
 
 class UserCreate(BaseModel):
-    name: str = Field(..., min_length=1, max_length=255)
+    first_name: str = Field(..., min_length=1, max_length=100)
+    last_name: str = Field(..., min_length=1, max_length=100)
+    username: str = Field(..., min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_]+$")
     email: EmailStr
-    password: str = Field(..., min_length=6)
-    role: Optional[str] = Field(default="customer")  # admin, vendor, customer
+    phone: Optional[str] = Field(None, max_length=20, pattern=r"^[+]?[\d\s-]{10,20}$")
+    password: str = Field(..., min_length=8)
+    role: Literal["customer", "vendor"] = Field(default="customer")
 
 class UserUpdate(BaseModel):
-    name: Optional[str] = Field(default=None, min_length=1, max_length=255)
+    first_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    last_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    username: Optional[str] = Field(None, min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_]+$")
     email: Optional[EmailStr] = None
+    phone: Optional[str] = Field(None, max_length=20, pattern=r"^[+]?[\d\s-]{10,20}$")
     notify_new_orders: Optional[bool] = None
     notify_low_stock_alerts: Optional[bool] = None
     notify_user_activity: Optional[bool] = None
@@ -33,16 +39,19 @@ class UserLogin(BaseModel):
 
 class UserResponse(BaseModel):
     id: int
-    name: str
+    first_name: str
+    last_name: str
+    username: str
     email: str
-    role: str
+    phone: Optional[str] = None
+    avatar_url: Optional[str] = None
+    role: Literal["customer", "vendor", "admin"]
     notify_new_orders: bool
     notify_low_stock_alerts: bool
     notify_user_activity: bool
     notify_system_updates: bool
-    is_admin: int
-    is_verified: int
-    is_active: int
+    is_verified: bool
+    is_active: bool
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

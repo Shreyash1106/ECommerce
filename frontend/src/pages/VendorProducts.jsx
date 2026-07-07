@@ -112,56 +112,62 @@ export default function VendorProducts() {
   );
 
   return (
-    <div className="page-container">
-      <div className="flex items-center justify-between">
+    <div className="min-h-screen text-white pb-10 px-8 py-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-lg font-semibold text-white">My Products</h1>
-          <p className="text-xs text-gray-500 mt-0.5">{products.length} products in catalog</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white">My Products</h1>
+          <p className="text-gray-400 text-sm mt-1">{products.length} products in catalog</p>
         </div>
-        <button onClick={() => { setForm(EMPTY_FORM); setCreateOpen(true); }} className="btn-primary">
-          <Plus size={15} /> Add Product
+        <button onClick={() => { setForm(EMPTY_FORM); setCreateOpen(true); }} className="bg-indigo-600 hover:bg-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_20px_rgba(79,70,229,0.5)] text-white px-5 h-11 rounded-xl flex items-center gap-2 font-semibold text-sm transition-all hover:-translate-y-0.5">
+          <Plus size={16} /> Add Product
         </button>
       </div>
 
-      <div className="relative max-w-xs">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products…" className="input-field pl-9 h-9 text-sm" />
+      <div className="relative max-w-sm mb-6">
+        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products…" className="w-full bg-gray-900/50 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all" />
       </div>
 
-      <div className="section-card">
+      <div className="bg-gray-900/40 backdrop-blur-md border border-white/5 rounded-2xl shadow-xl overflow-hidden">
         {filtered.length === 0 ? (
-          <EmptyState icon={Package} title="No products yet" description="Add your first product to get started"
-            action={<button onClick={() => setCreateOpen(true)} className="btn-primary text-xs">Add Product</button>} />
+          <div className="p-8">
+            <EmptyState icon={Package} title="No products yet" description="Add your first product to get started"
+              action={<button onClick={() => setCreateOpen(true)} className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all shadow-[0_0_15px_rgba(79,70,229,0.2)]">Add Product</button>} />
+          </div>
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="data-table w-full">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-gray-800">
-                    <th>Product</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th>
+                  <tr className="border-b border-white/5 bg-white/[0.01]">
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Product</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Price</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Stock</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-800">
+                <tbody className="divide-y divide-white/5">
                   {paginated.map((p) => {
                     const qty = p.inventory?.quantity;
                     const status = stockStatus(qty);
                     return (
-                      <tr key={p.id}>
-                        <td>
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0">
-                              <ImageOff size={14} className="text-gray-600" />
+                      <tr key={p.id} className="hover:bg-white/[0.02] transition-colors group">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-gray-800/80 border border-white/5 flex items-center justify-center flex-shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+                              <ImageOff size={16} className="text-gray-500" />
                             </div>
-                            <span className="font-medium text-gray-200 text-sm">{p.name}</span>
+                            <span className="font-bold text-gray-200 text-sm group-hover:text-white transition-colors">{p.name}</span>
                           </div>
                         </td>
-                        <td className="font-semibold text-white">${Number(p.price).toFixed(2)}</td>
-                        <td className={`text-xs font-medium ${qty === 0 ? "text-red-400" : qty < 20 ? "text-yellow-400" : "text-gray-300"}`}>{qty ?? "—"}</td>
-                        <td><Badge status={status.toLowerCase()}>{status}</Badge></td>
-                        <td>
-                          <div className="flex items-center gap-1">
-                            <button onClick={() => openEdit(p)} className="p-1.5 rounded-md hover:bg-gray-700 text-gray-500 hover:text-indigo-400 transition-colors"><Pencil size={13} /></button>
-                            <button onClick={() => setDeleteTarget(p)} className="p-1.5 rounded-md hover:bg-gray-700 text-gray-500 hover:text-red-400 transition-colors"><Trash2 size={13} /></button>
+                        <td className="px-6 py-4 font-bold text-white">${Number(p.price).toFixed(2)}</td>
+                        <td className={`px-6 py-4 text-sm font-semibold ${qty === 0 ? "text-red-400" : qty < 20 ? "text-amber-400" : "text-gray-300"}`}>{qty ?? "—"}</td>
+                        <td className="px-6 py-4"><Badge status={status.toLowerCase()}>{status}</Badge></td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button onClick={() => openEdit(p)} className="p-2 rounded-lg hover:bg-indigo-500/10 text-gray-500 hover:text-indigo-400 transition-all"><Pencil size={16} /></button>
+                            <button onClick={() => setDeleteTarget(p)} className="p-2 rounded-lg hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-all"><Trash2 size={16} /></button>
                           </div>
                         </td>
                       </tr>
@@ -170,7 +176,9 @@ export default function VendorProducts() {
                 </tbody>
               </table>
             </div>
-            <Pagination page={page} total={filtered.length} pageSize={PAGE_SIZE} onChange={setPage} />
+            <div className="p-4 border-t border-white/5 bg-white/[0.01]">
+              <Pagination page={page} total={filtered.length} pageSize={PAGE_SIZE} onChange={setPage} />
+            </div>
           </>
         )}
       </div>
