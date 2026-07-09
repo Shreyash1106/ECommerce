@@ -22,6 +22,9 @@ class ProductBase(BaseModel):
     brand: Optional[str] = Field(None, max_length=255)
     rating: Optional[float] = Field(0.0, ge=0, le=5)
     discount_percentage: Optional[float] = Field(0.0, ge=0, le=100)
+    color: Optional[str] = Field(None, max_length=100)
+    size: Optional[str] = Field(None, max_length=50)
+    material: Optional[str] = Field(None, max_length=100)
 
 
 class ProductCreate(ProductBase):
@@ -45,6 +48,9 @@ class ProductResponse(ProductBase):
     image_url: Optional[str] = None
     category: Optional[CategoryInfo] = None
     inventory: Optional[InventoryInfo] = None
+    color: Optional[str] = None
+    size: Optional[str] = None
+    material: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

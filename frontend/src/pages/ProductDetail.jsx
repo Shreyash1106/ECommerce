@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Package, ShoppingCart, Tag, Layers } from "lucide-react";
+import { ArrowLeft, Package, ShoppingCart, Tag, Layers, Star, Percent, Calendar, Palette, Ruler, Shirt } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import client from "../api/client";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
@@ -89,11 +89,70 @@ export default function ProductDetail() {
               </div>
             )}
 
-            <div className="flex items-center gap-3 mb-8">
-              <Badge status={inStock ? "active" : "inactive"} className="px-3 py-1.5 text-sm">
-                {stock !== null ? `${stock} in stock` : inStock ? "In Stock" : "Out of Stock"}
-              </Badge>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+              {product.brand && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Brand</p>
+                  <p className="text-sm font-semibold text-white">{product.brand}</p>
+                </div>
+              )}
+              {product.rating > 0 && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                    <Star size={12} /> Rating
+                  </p>
+                  <p className="text-sm font-semibold text-yellow-400">{product.rating.toFixed(1)} / 5.0</p>
+                </div>
+              )}
+              {product.discount_percentage > 0 && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                    <Percent size={12} /> Discount
+                  </p>
+                  <p className="text-sm font-semibold text-green-400">{product.discount_percentage}% OFF</p>
+                </div>
+              )}
+              {product.created_at && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                    <Calendar size={12} /> Added
+                  </p>
+                  <p className="text-sm font-semibold text-gray-300">{new Date(product.created_at).toLocaleDateString()}</p>
+                </div>
+              )}
             </div>
+
+            {(product.color || product.size || product.material) && (
+              <div className="grid grid-cols-3 gap-3 mb-8 p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                {product.color && (
+                  <div className="flex items-center gap-2">
+                    <Palette size={16} className="text-pink-400" />
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">Color</p>
+                      <p className="text-sm font-semibold text-white">{product.color}</p>
+                    </div>
+                  </div>
+                )}
+                {product.size && (
+                  <div className="flex items-center gap-2">
+                    <Ruler size={16} className="text-blue-400" />
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">Size</p>
+                      <p className="text-sm font-semibold text-white">{product.size}</p>
+                    </div>
+                  </div>
+                )}
+                {product.material && (
+                  <div className="flex items-center gap-2">
+                    <Shirt size={16} className="text-purple-400" />
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">Material</p>
+                      <p className="text-sm font-semibold text-white">{product.material}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {inStock && (
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-6 border-t border-white/10">
