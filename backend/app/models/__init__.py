@@ -11,3 +11,4 @@ from .product_image import ProductImage
 from .wishlist import WishlistItem
 from .saved_search import SavedSearch
 from .price_history import PriceHistory
+from .payment import Payment

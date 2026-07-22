@@ -27,6 +27,16 @@ ALLOWED_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.webp'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
 def create_product(db: Session, product_in: ProductCreate) -> Product:
+    """Create a new product with validation."""
+    # Validate category exists if provided
+    if product_in.category_id:
+        category = db.query(Category).filter(Category.id == product_in.category_id).first()
+        if not category:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Category with ID {product_in.category_id} does not exist. Available categories: 1=Electronics, 2=Clothing, 3=Books, 4=Home & Garden, 5=Sports"
+            )
+    
     db_product = Product(
         name=product_in.name,
         category_id=product_in.category_id,
@@ -39,9 +49,11 @@ def create_product(db: Session, product_in: ProductCreate) -> Product:
     return db_product
 
 def get_products(db: Session, skip: int = 0, limit: int = 100) -> List[Product]:
+    """Get all products with pagination."""
     return db.query(Product).options(joinedload(Product.inventory), joinedload(Product.category)).offset(skip).limit(limit).all()
 
 def get_product_by_id(db: Session, product_id: int) -> Product:
+    """Get a product by ID with inventory and category."""
     product = db.query(Product).options(joinedload(Product.inventory), joinedload(Product.category)).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(
@@ -51,6 +63,7 @@ def get_product_by_id(db: Session, product_id: int) -> Product:
     return product
 
 def update_product(db: Session, product_id: int, product_in: ProductUpdate) -> Product:
+    """Update an existing product."""
     db_product = get_product_by_id(db, product_id)
     
     update_data = product_in.model_dump(exclude_unset=True)
@@ -62,6 +75,7 @@ def update_product(db: Session, product_id: int, product_in: ProductUpdate) -> P
     return db_product
 
 def delete_product(db: Session, product_id: int) -> None:
+    """Delete a product by ID."""
     db_product = get_product_by_id(db, product_id)
     db.delete(db_product)
     db.commit()
