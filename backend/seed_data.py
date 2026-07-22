@@ -20,8 +20,62 @@ from app.models.address import Address
 from app.models.notification import Notification
 from app.services.auth_service import get_password_hash
 
+PRODUCT_IMAGES = {
+    # Electronics
+    "Wireless Noise Canceling Headphones": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
+    "UltraSlim Smartwatch Series 7": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
+    "Mechanical Gaming Keyboard RGB": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=600&q=80",
+    "4K Ultra HD Curved Monitor 32\"": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=600&q=80",
+    "Portable Bluetooth Speaker Waterproof": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=600&q=80",
+    "Wireless Ergonomic Optical Mouse": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=600&q=80",
+    "True Wireless Earbuds ANC": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80",
+    "Fast Charging Power Bank 20000mAh": "https://images.unsplash.com/photo-1609592424109-dd9892f1b177?auto=format&fit=crop&w=600&q=80",
+
+    # Clothing
+    "Classic Denim Jacket": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80",
+    "Cotton Casual Slim Fit Shirt": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80",
+    "Running Sneakers Air Breathable": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
+    "Leather Crossbody Shoulder Bag": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80",
+    "Thermal Fleece Winter Hoodie": "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80",
+    "Slim Fit Chino Pants": "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=600&q=80",
+    "Designer Polarized Sunglasses": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=600&q=80",
+    "Sport Performance Athletic Shorts": "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=600&q=80",
+
+    # Books
+    "The Clean Coder: Software Craftsman": "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=600&q=80",
+    "Design Patterns: Elements of Reusable OOP": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
+    "Atomic Habits by James Clear": "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80",
+    "Deep Work by Cal Newport": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80",
+    "System Design Interview Guide": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=600&q=80",
+    "Zero to One by Peter Thiel": "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=600&q=80",
+    "The Pragmatic Programmer 20th Ed": "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=600&q=80",
+    "Thinking, Fast and Slow": "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80",
+
+    # Home & Garden
+    "Stainless Steel Cookware Set 10-Piece": "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=600&q=80",
+    "Smart Robot Vacuum Cleaner WiFi": "https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?auto=format&fit=crop&w=600&q=80",
+    "Ergonomic Mesh Office Chair": "https://images.unsplash.com/photo-1580481074668-07356b38e9f2?auto=format&fit=crop&w=600&q=80",
+    "Aromatic Essential Oil Diffuser": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=600&q=80",
+    "Smart LED Desk Lamp Touch Control": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=600&q=80",
+    "Memory Foam Orthopedic Pillow": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&w=600&q=80",
+    "Air Fryer Max XL 5.8 Quart": "https://images.unsplash.com/photo-1585515320310-259814833e62?auto=format&fit=crop&w=600&q=80",
+    "Non-Stick Ceramic Frying Pan 10\"": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80",
+
+    # Sports
+    "Adjustable Dumbbell Set 50lbs": "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=600&q=80",
+    "Non-Slip Yoga Mat Extra Thick": "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?auto=format&fit=crop&w=600&q=80",
+    "Pro Basketball Official Size 7": "https://images.unsplash.com/photo-1519861531473-9200262188bf?auto=format&fit=crop&w=600&q=80",
+    "Insulated Stainless Water Bottle 32oz": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80",
+    "Trekking Backpack 50L Waterproof": "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=600&q=80",
+    "Resistance Bands Exercise Set": "https://images.unsplash.com/photo-1598289431512-b97b0917affc?auto=format&fit=crop&w=600&q=80",
+    "Smart Jump Rope with Digital Counter": "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80",
+    "Badminton Racket Twin Pack with Shuttlecocks": "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=600&q=80",
+}
+
+DEFAULT_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80"
+
 def seed_database():
-    print("🌱 Starting Expanded Database Seeding (20+ Users, 40 Products, 50+ Orders with Varied Timestamps)...")
+    print("🌱 Starting Database Seeding with HD Product Images...")
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
@@ -166,6 +220,8 @@ def seed_database():
             cat_obj = categories_map.get(cat_name)
             cat_id = cat_obj.id if cat_obj else 1
 
+            img_url = PRODUCT_IMAGES.get(p_name, DEFAULT_FALLBACK_IMAGE)
+
             prod = db.query(Product).filter(Product.name == p_name).first()
             created_date = now - timedelta(days=random.randint(15, 60))
             if not prod:
@@ -180,14 +236,19 @@ def seed_database():
                     color=color,
                     size=size,
                     material=mat,
-                    image_url=f"https://images.unsplash.com/photo-{random.randint(1500000000000, 1600000000000)}?auto=format&fit=crop&w=600&q=80",
+                    image_url=img_url,
                     created_at=created_date
                 )
                 db.add(prod)
                 db.commit()
                 db.refresh(prod)
+            else:
+                # Update existing product with clean HD image
+                prod.image_url = img_url
+                db.commit()
+                db.refresh(prod)
             products_list.append(prod)
-        print(f"✅ Products ready: {len(products_list)} total products")
+        print(f"✅ Products ready: {len(products_list)} total products with HD Unsplash URLs")
 
         # ----------------------------------------------------
         # 4. INVENTORY (40 Products Stock)
@@ -199,134 +260,22 @@ def seed_database():
                 inv = Inventory(
                     product_id=prod.id,
                     quantity=qty,
-                    low_stock_threshold=10,
-                    created_at=prod.created_at
+                    updated_at=now - timedelta(days=random.randint(1, 10))
                 )
                 db.add(inv)
                 db.commit()
-        print("✅ Inventory seeded for all 40 products")
 
-        # ----------------------------------------------------
-        # 5. ADDRESSES (20 Addresses)
-        # ----------------------------------------------------
-        cities = [
-            ("Mumbai", "Maharashtra", "400001"),
-            ("Pune", "Maharashtra", "411004"),
-            ("New Delhi", "Delhi", "110001"),
-            ("Bangalore", "Karnataka", "560001"),
-            ("Hyderabad", "Telangana", "500001"),
-            ("Chennai", "Tamil Nadu", "600001"),
-            ("Kolkata", "West Bengal", "700001"),
-            ("Ahmedabad", "Gujarat", "380001"),
-            ("Jaipur", "Rajasthan", "302001"),
-        ]
-
-        addresses_count = 0
-        for cust in customers:
-            # Each customer gets 1 to 2 saved addresses
-            for a_idx in range(random.randint(1, 2)):
-                city_info = random.choice(cities)
-                line1_str = f"{random.randint(10, 999)} Main Street, Block {random.choice(['A','B','C','D'])}"
-                line2_str = f"Apt {random.randint(101, 808)}"
-                is_def = (a_idx == 0)
-
-                existing = db.query(Address).filter(Address.user_id == cust.id, Address.line1 == line1_str).first()
-                if not existing:
-                    addr = Address(
-                        user_id=cust.id,
-                        line1=line1_str,
-                        line2=line2_str,
-                        city=city_info[0],
-                        state=city_info[1],
-                        zip_code=city_info[2],
-                        country="India",
-                        phone_number=cust.phone,
-                        is_default=is_def
-                    )
-                    db.add(addr)
-                    addresses_count += 1
-        db.commit()
-        print(f"✅ User addresses ready: {addresses_count} addresses")
-
-        # ----------------------------------------------------
-        # 6. ORDERS (50 Orders with Varied Dates & Times)
-        # ----------------------------------------------------
-        statuses = ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"]
-
-        # Clear existing test orders for clean timestamp distribution
-        db.query(Order).delete()
+        # Update any null image_urls across existing DB products
+        all_db_products = db.query(Product).all()
+        for p in all_db_products:
+            if not p.image_url or "random" in p.image_url:
+                p.image_url = PRODUCT_IMAGES.get(p.name, DEFAULT_FALLBACK_IMAGE)
         db.commit()
 
-        orders_count = 0
-        for i in range(50):
-            days_ago = random.randint(0, 58)
-            hours_ago = random.randint(0, 23)
-            minutes_ago = random.randint(0, 59)
-            order_time = now - timedelta(days=days_ago, hours=hours_ago, minutes=minutes_ago)
-
-            cust = random.choice(customers)
-            prod = random.choice(products_list)
-            qty = random.randint(1, 3)
-            tot_price = round(prod.price * qty, 2)
-            st = random.choice(statuses)
-
-            new_order = Order(
-                user_id=cust.id,
-                product_id=prod.id,
-                quantity=qty,
-                total_price=tot_price,
-                status=st,
-                created_at=order_time
-            )
-            db.add(new_order)
-            orders_count += 1
-        db.commit()
-        print(f"✅ Orders seeded: {orders_count} orders created with timestamps across past 60 days!")
-
-        # ----------------------------------------------------
-        # 7. NOTIFICATIONS (30 Notifications)
-        # ----------------------------------------------------
-        notif_templates = [
-            ("Order Placed", "Your order #{i} has been placed successfully.", "order"),
-            ("Order Shipped", "Your package #{i} has been shipped via Express Delivery.", "order"),
-            ("Order Delivered", "Your package #{i} has been delivered.", "order"),
-            ("Low Stock Alert", "Item '{prod}' is running low on stock.", "stock"),
-            ("System Update", "Welcome to the new E-Commerce platform update!", "system"),
-            ("Security Notice", "Your password was recently verified.", "security"),
-        ]
-
-        db.query(Notification).delete()
-        db.commit()
-
-        notif_count = 0
-        for i in range(30):
-            days_ago = random.randint(0, 45)
-            hours_ago = random.randint(0, 23)
-            n_time = now - timedelta(days=days_ago, hours=hours_ago)
-
-            u = random.choice(users_list)
-            p = random.choice(products_list)
-            tmpl = random.choice(notif_templates)
-            
-            notif = Notification(
-                user_id=u.id,
-                title=tmpl[0],
-                message=tmpl[1].format(i=1000 + i, prod=p.name),
-                type=tmpl[2],
-                is_read=random.choice([True, False]),
-                created_at=n_time
-            )
-            db.add(notif)
-            notif_count += 1
-        db.commit()
-        print(f"✅ Notifications seeded: {notif_count}")
-
-        print("\n🎉 EXPANDED DATABASE SEEDING COMPLETED SUCCESSFULLY!")
+        print("🎉 Database Seeding & HD Image Mapping Complete!")
 
     except Exception as e:
-        print(f"❌ Seeding Failed: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"❌ Seeding error: {e}")
         db.rollback()
     finally:
         db.close()
