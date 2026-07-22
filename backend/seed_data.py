@@ -75,7 +75,7 @@ PRODUCT_IMAGES = {
 DEFAULT_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80"
 
 def seed_database():
-    print("🌱 Starting Database Seeding with HD Product Images...")
+    print("🌱 Starting Permanent Admin & Database Seeding...")
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
@@ -102,42 +102,31 @@ def seed_database():
                 db.commit()
                 db.refresh(cat)
             categories_map[cat.name] = cat
-        print(f"✅ Categories ready: {len(categories_map)}")
 
         # ----------------------------------------------------
-        # 2. USERS (20 Users)
+        # 2. PERMANENT ADMIN & USERS SEEDING
         # ----------------------------------------------------
-        default_pwd = get_password_hash("Password@123")
+        admin_pwd = get_password_hash("1234567890")
+        default_pwd = get_password_hash("1234567890")
         
         users_raw = [
-            ("admin_user", "admin@example.com", "System", "Admin", "admin", "+919876543200", 60),
-            ("tech_vendor", "vendor1@example.com", "Alex", "Vendor", "vendor", "+919876543201", 55),
-            ("style_vendor", "vendor2@example.com", "Sophia", "Vendor", "vendor", "+919876543202", 52),
-            ("gear_vendor", "vendor3@example.com", "David", "Vendor", "vendor", "+919876543203", 50),
+            ("shreyash_admin", "shreyashtbc@gmail.com", "Shreyash", "Admin", "admin", "+919876543200", 60),
+            ("admin_user", "admin@example.com", "System", "Admin", "admin", "+919876543201", 60),
+            ("tech_vendor", "vendor1@example.com", "Alex", "Vendor", "vendor", "+919876543202", 55),
+            ("style_vendor", "vendor2@example.com", "Sophia", "Vendor", "vendor", "+919876543203", 52),
+            ("gear_vendor", "vendor3@example.com", "David", "Vendor", "vendor", "+919876543204", 50),
             
-            ("john_buyer", "john@example.com", "John", "Doe", "customer", "+919876543204", 45),
-            ("sarah_buyer", "sarah@example.com", "Sarah", "Smith", "customer", "+919876543205", 42),
-            ("rahul_buyer", "rahul@example.com", "Rahul", "Sharma", "customer", "+919876543206", 40),
-            ("priya_buyer", "priya@example.com", "Priya", "Patel", "customer", "+919876543207", 38),
-            ("amit_buyer", "amit@example.com", "Amit", "Verma", "customer", "+919876543208", 35),
-            ("neha_buyer", "neha@example.com", "Neha", "Gupta", "customer", "+919876543209", 32),
-            
-            ("vikram_buyer", "vikram@example.com", "Vikram", "Singh", "customer", "+919876543210", 30),
-            ("ananya_buyer", "ananya@example.com", "Ananya", "Rao", "customer", "+919876543211", 28),
-            ("rohan_buyer", "rohan@example.com", "Rohan", "Deshmukh", "customer", "+919876543212", 25),
-            ("pooja_buyer", "pooja@example.com", "Pooja", "Joshi", "customer", "+919876543213", 22),
-            ("karan_buyer", "karan@example.com", "Karan", "Mehta", "customer", "+919876543214", 20),
-            
-            ("sneha_buyer", "sneha@example.com", "Sneha", "Kulkarni", "customer", "+919876543215", 18),
-            ("aditya_buyer", "aditya@example.com", "Aditya", "Nair", "customer", "+919876543216", 15),
-            ("kavya_buyer", "kavya@example.com", "Kavya", "Reddy", "customer", "+919876543217", 12),
-            ("siddharth_buyer", "siddharth@example.com", "Siddharth", "Bhat", "customer", "+919876543218", 10),
-            ("riya_buyer", "riya@example.com", "Riya", "Sen", "customer", "+919876543219", 5),
+            ("john_buyer", "john@example.com", "John", "Doe", "customer", "+919876543205", 45),
+            ("sarah_buyer", "sarah@example.com", "Sarah", "Smith", "customer", "+919876543206", 42),
+            ("rahul_buyer", "rahul@example.com", "Rahul", "Sharma", "customer", "+919876543207", 40),
+            ("priya_buyer", "priya@example.com", "Priya", "Patel", "customer", "+919876543208", 38),
+            ("amit_buyer", "amit@example.com", "Amit", "Verma", "customer", "+919876543209", 35),
         ]
 
         users_list = []
         for uname, email, fname, lname, role, phone, days_old in users_raw:
             u = db.query(User).filter(User.email == email).first()
+            target_pwd = admin_pwd if role == "admin" or email == "shreyashtbc@gmail.com" else default_pwd
             if not u:
                 u = User(
                     username=uname,
@@ -146,7 +135,7 @@ def seed_database():
                     last_name=lname,
                     role=role,
                     phone=phone,
-                    password=default_pwd,
+                    password=target_pwd,
                     is_verified=True,
                     is_active=True,
                     created_at=now - timedelta(days=days_old)
@@ -154,10 +143,16 @@ def seed_database():
                 db.add(u)
                 db.commit()
                 db.refresh(u)
+            else:
+                # Force update password and verification for shreyashtbc@gmail.com and admin accounts
+                u.password = target_pwd
+                u.role = role
+                u.is_verified = True
+                u.is_active = True
+                db.commit()
+                db.refresh(u)
             users_list.append(u)
-        print(f"✅ Users seeded: {len(users_list)} total users")
-
-        customers = [u for u in users_list if u.role == "customer"]
+        print(f"✅ Users ready: {len(users_list)} users with permanent admin credentials (shreyashtbc@gmail.com / 1234567890)")
 
         # ----------------------------------------------------
         # 3. PRODUCTS (40 Products Total)
@@ -243,12 +238,10 @@ def seed_database():
                 db.commit()
                 db.refresh(prod)
             else:
-                # Update existing product with clean HD image
                 prod.image_url = img_url
                 db.commit()
                 db.refresh(prod)
             products_list.append(prod)
-        print(f"✅ Products ready: {len(products_list)} total products with HD Unsplash URLs")
 
         # ----------------------------------------------------
         # 4. INVENTORY (40 Products Stock)
@@ -265,14 +258,7 @@ def seed_database():
                 db.add(inv)
                 db.commit()
 
-        # Update any null image_urls across existing DB products
-        all_db_products = db.query(Product).all()
-        for p in all_db_products:
-            if not p.image_url or "random" in p.image_url:
-                p.image_url = PRODUCT_IMAGES.get(p.name, DEFAULT_FALLBACK_IMAGE)
-        db.commit()
-
-        print("🎉 Database Seeding & HD Image Mapping Complete!")
+        print("🎉 Database Seeding & Permanent Admin Credentials Complete!")
 
     except Exception as e:
         print(f"❌ Seeding error: {e}")

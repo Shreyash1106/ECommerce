@@ -1,82 +1,42 @@
-# 🛒 CommerceOS — Senior Enterprise E-Commerce SaaS Marketplace
+# Enterprise Multi-Vendor E-Commerce Marketplace Platform
 
-A commercial-grade, multi-vendor e-commerce marketplace platform inspired by **Amazon, Shopify, Flipkart, and Apple Store**. Built with a **React 18 + Vite + TailwindCSS + Framer Motion** frontend and a **FastAPI + PostgreSQL + SQLAlchemy** backend featuring a database-backed Mock Payment Gateway, pre-checkout cart validation, 51 OpenAPI endpoints, and real-time WebSockets.
-
----
-
-## 💎 Key Features & Architecture Highlights
-
-### 🎨 Frontend (Amazon & Apple Inspired Light Theme)
-- **Framer Motion Micro-Interactions**: Hover lift cards (`rounded-[20px]`), 48px height commercial button system (`rounded-[14px]`), smooth tab transitions.
-- **Top Sticky Mega Header**: Glass blur header (`backdrop-blur-md bg-white/90`), search bar, wishlist counter, notifications bell, cart badge, and sub-header toolbar.
-- **Multi-Step Checkout & Cart**: Grouped cart items, GST 18%, shipping rules, promo code validation (`SAVE10`), and 5-step checkout progress bar.
-- **Product Details Page Overhaul**: Interactive multi-thumbnail gallery, sticky purchase card (`sticky top-28`), 24-hr express shipping estimate, certified seller info, and tabbed specifications.
-- **Mobile Bottom Navigation**: 20px touch-target mobile navigation bar (`Home`, `Search`, `Cart`, `Orders`, `Profile`).
-
-### ⚙️ Enterprise Backend (FastAPI + PostgreSQL)
-- **Standardized Response Model**: `APIResponse[T]` & `PaginatedResponse[T]` schemas (`success`, `message`, `data`, `meta`, `errors`).
-- **Fake Payment Gateway Engine**: Database-backed payment engine (`Payment` ORM model) generating unique `payment_id`, `transaction_id`, `receipt_number`, gateway name ("MockPay Enterprise"), invoice metadata, auto-reducing inventory stock, and creating status history records.
-- **Pre-Checkout Validation Service**: Verifies product stock availability, coupon discounts, GST 18%, shipping fee ($15 or free over $100), and grand totals.
-- **51 OpenAPI Endpoints**: Documented and verified under `http://localhost:8000/docs`.
+A production-grade, full-stack multi-vendor marketplace architecture built with **FastAPI, PostgreSQL, SQLAlchemy, React, Vite, and TailwindCSS**. Inspired by modern commercial platforms like **Amazon, Shopify, Apple, and Flipkart**.
 
 ---
 
-## 🛠️ Tech Stack
+## 🌟 Key Architecture & Features
 
-### Frontend
-- **React 18** - UI Library
-- **Vite** - High-performance build tool
-- **TailwindCSS** - Utility-first styling
-- **Framer Motion** - Production animations & transitions
-- **Zustand** - Global state management with LocalStorage persistence
-- **React Query (@tanstack/react-query)** - Server state management & caching
-- **Axios** - HTTP Client
-- **Recharts** - Enterprise data visualization
-- **Lucide React** - Icon library
+### 🛍️ Customer Commerce Experience
+- **Modern Marketplace Showcase**: Hero carousel, countdown timers, brand showcase, category grid, dynamic product filtering.
+- **Product Detail Engine**: Multi-thumbnail gallery, sticky purchase card, certified seller info, specifications tabs.
+- **Shopping Cart & Pre-Checkout**: Stock validation, GST 18% calculation, promo code engine (`SAVE10`, `PROMO20`), estimated shipping fee calculation.
+- **5-Step Checkout**: Address selection, delivery speed, payment gateway, order review, instant confirmation.
+- **Order History & Amazon Tracking**: 6-step progress timeline modal (`Pending` -> `Confirmed` -> `Packed` -> `Shipped` -> `Out For Delivery` -> `Delivered`).
+- **Tax Invoice & Receipt Engine**: Downloadable & printable PDF tax receipts with merchant GST registration numbers.
+- **Returns & Refunds Hub**: Delivered order return request form, 7-step Amazon Return Timeline, printable refund receipt, auto-inventory restocking.
 
-### Backend
-- **FastAPI** - Python web framework
-- **PostgreSQL** - Relational database engine
-- **SQLAlchemy** - Enterprise ORM
-- **Pydantic v2** - Schema serialization & strict data validation
-- **Passlib & PyJWT** - Security, password hashing & JWT authentication
-- **WebSockets** - Real-time notifications and order timeline updates
+### 🏬 Vendor Business Suite
+- **Vendor Wallet & Payout Engine**: Available Balance, Escrow Pending Earnings, Total Withdrawn, Payout Withdrawal Modal (`HDFC / ICICI` bank transfers).
+- **Store Profile & Verification**: Store logo/banner branding, business address, working hours, GST/PAN registration verification (`Approved`, `Under Review`).
+- **Seller Scorecard & Reviews**: Overall Seller Rating (4.85 / 5.0), 99.2% Order Acceptance Rate, customer reviews management table & merchant reply drawer.
+- **Inventory & CSV Bulk Operations**: CSV Template Download (`products_import_template.csv`) and bulk catalog updates.
 
----
-
-## 🚀 Quick Start Guide
-
-### 1. Backend Setup
-```bash
-cd backend
-python -m venv .venv
-# Windows:
-.venv\Scripts\activate
-# Linux/macOS:
-source .venv/bin/activate
-
-pip install -r requirements.txt
-python -m app.main
-```
-> Access OpenAPI Documentation at: `http://localhost:8000/docs`
-
-### 2. Frontend Setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
-> Access Frontend Application at: `http://localhost:5173`
+### 🛡️ Admin CMS & Business Management Platform
+- **Homepage CMS & Banners**: Hero Banner CRUD, publish/expiry date scheduling, banner priority.
+- **Site Settings & Policy Editor**: Company Info, GST Number, Tax %, Shipping rules, Policy Pages editor (About Us, Privacy, Terms, Refund Policy).
+- **Email Notification Templates**: Live previewer for Order Confirmation, Invoice, Refund, Welcome, and Vendor Approval emails.
+- **Telemetry & Audit Trail**: Active user tracking, CPU/RAM stats, failed payment logs, Admin Audit Logs table.
 
 ---
 
-## 👥 User Roles & Demo Credentials
+## 👥 Permanent Admin & Demo Credentials
 
-| Role | Username / Email | Default Password | Permissions |
+| Role | Username / Email | Permanent Password | Permissions |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `admin@example.com` | `admin123` | Full system control, marketplace analytics, user/vendor management |
-| **Vendor** | `vendor@example.com` | `vendor123` | Product catalog, store orders, inventory tracking, sales analytics |
-| **Customer** | `customer@example.com` | `customer123` | Product discovery, wishlist, shopping cart, checkout, saved addresses |
+| **Admin** | `shreyashtbc@gmail.com` | `1234567890` | Full system control, marketplace analytics, user/vendor management |
+| **Admin (Backup)** | `admin@example.com` | `1234567890` | Full system control & emergency fallback |
+| **Vendor** | `vendor1@example.com` | `1234567890` | Product catalog, store orders, inventory tracking, sales analytics |
+| **Customer** | `john@example.com` | `1234567890` | Product discovery, wishlist, shopping cart, checkout, saved addresses |
 
 ---
 
