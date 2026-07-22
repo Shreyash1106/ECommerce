@@ -1,12 +1,16 @@
 from typing import List
 from fastapi import APIRouter, Depends, status, Path, Query, HTTPException
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 
 from app.schemas.order import OrderCreate, OrderResponse
 from app.services import order_service
 from app.database.session import get_db
 from app.core.security import get_current_user, get_current_vendor_or_admin_user, get_current_customer_user
 from app.models.user import User
+
+class OrderStatusUpdate(BaseModel):
+    status: str
 
 router = APIRouter(tags=["Orders"])
 
@@ -65,13 +69,13 @@ def get_order(
 @router.patch("/{order_id}/status", response_model=OrderResponse)
 def update_order_status(
     order_id: int = Path(..., gt=0),
-    payload: dict = None,
+    payload: OrderStatusUpdate = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_vendor_or_admin_user)
 ):
     """Update order status (admin/vendor only)."""
     allowed = {"Pending", "Processing", "Shipped", "Delivered", "Cancelled"}
-    new_status = (payload or {}).get("status", "")
+    new_status = payload.status if payload else ""
     if new_status not in allowed:
         raise HTTPException(status_code=400, detail=f"Invalid status. Allowed: {allowed}")
     try:

@@ -11,7 +11,7 @@ from app.constants.roles import ROLE_ADMIN, ROLE_VENDOR, ROLE_CUSTOMER, VENDOR_O
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -33,25 +33,25 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
     """Allow access if role='admin'."""
-    if current_user.role != ROLE_ADMIN:
+    if current_user.role.lower() != ROLE_ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required")
     return current_user
 
 def get_current_vendor_user(current_user: User = Depends(get_current_user)) -> User:
     """Allow access if role='vendor'."""
-    if current_user.role != ROLE_VENDOR:
+    if current_user.role.lower() != ROLE_VENDOR:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Vendor privileges required")
     return current_user
 
 def get_current_customer_user(current_user: User = Depends(get_current_user)) -> User:
     """Allow access if role='customer'."""
-    if current_user.role != ROLE_CUSTOMER:
+    if current_user.role.lower() != ROLE_CUSTOMER:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Customer privileges required")
     return current_user
 
 def get_current_vendor_or_admin_user(current_user: User = Depends(get_current_user)) -> User:
     """Allow access if role is 'vendor' or 'admin'."""
-    if current_user.role not in VENDOR_OR_ADMIN_ROLES:
+    if current_user.role.lower() not in VENDOR_OR_ADMIN_ROLES:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin or Vendor privileges required")
     return current_user
 
@@ -72,7 +72,7 @@ def check_ownership(resource_owner_id: int, current_user: User, allow_admin: boo
         return True
     return resource_owner_id == current_user.id
 
-def require_ownership(resource_owner_id: int, current_user: User = Depends(get_current_user), allow_admin: bool = True) -> User:
+def require_ownership(resource_owner_id: int, current_user: User = Depends(get_current_user), allow_admin: bool = True):
     """Dependency to require resource ownership."""
     if not check_ownership(resource_owner_id, current_user, allow_admin):
         raise HTTPException(

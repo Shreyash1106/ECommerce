@@ -18,9 +18,7 @@ def run_migrations():
     except Exception as e:
         logger.error(f"Database create_all error: {e}")
 
-    # Auto-add missing columns (safe to run every startup)
-    # Only hardcoded table/column names are used — no user input involved
-    ALLOWED_TABLES = {"users", "products", "orders", "inventory", "notifications"}
+    ALLOWED_TABLES = {"users", "products", "orders", "inventory", "notifications", "payments"}
     missing_columns = [
         ("users", "is_active", "INTEGER NOT NULL DEFAULT 1"),
         ("users", "notify_new_orders", "INTEGER NOT NULL DEFAULT 1"),
@@ -47,9 +45,9 @@ def run_migrations():
 run_migrations()
 
 app = FastAPI(
-    title="E-Commerce API",
-    description="Production-ready E-Commerce Backend",
-    version="1.0.0",
+    title="Enterprise E-Commerce Marketplace API",
+    description="Production-grade RESTful Marketplace API built with FastAPI, PostgreSQL, and SQLAlchemy.",
+    version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -72,8 +70,12 @@ app.add_middleware(
 )
 
 try:
-    from app.api import auth, products, orders, notifications, analytics, search, inventory, reports, email_verification, admin
-    logger.info("All routers imported")
+    from app.api import (
+        auth, products, orders, notifications, analytics,
+        search, inventory, reports, email_verification, admin,
+        addresses, payments, cart, returns
+    )
+    logger.info("All routers imported successfully")
 except Exception as e:
     logger.error(f"Router import error: {e}")
     raise
@@ -88,21 +90,35 @@ app.include_router(inventory.router,         prefix="/api")
 app.include_router(reports.router,           prefix="/api")
 app.include_router(email_verification.router)
 app.include_router(admin.router,             prefix="/api/admin")
+app.include_router(addresses.router,         prefix="/api/addresses")
+app.include_router(payments.router,          prefix="/api")
+app.include_router(cart.router,              prefix="/api")
+app.include_router(returns.router,           prefix="/api")
 
 @app.get("/")
 def root():
-    return {"message": "E-Commerce API", "version": "1.0.0", "status": "running", "docs": "/docs"}
+    return {
+        "success": True,
+        "message": "Enterprise E-Commerce Marketplace API",
+        "version": "2.0.0",
+        "status": "running",
+        "docs": "/docs"
+    }
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "message": "API running"}
+    return {"success": True, "status": "ok", "message": "API running cleanly"}
 
 @app.exception_handler(Exception)
 async def global_exception(request: Request, exc: Exception):
-    logger.error(f"Error: {str(exc)}", exc_info=True)
+    logger.error(f"Global Exception: {str(exc)}", exc_info=True)
     return JSONResponse(
         status_code=500,
-        content={"detail": "Internal server error", "type": type(exc).__name__}
+        content={
+            "success": False,
+            "message": "An unexpected server error occurred",
+            "errors": [{"field": "server", "message": str(exc)}]
+        }
     )
 
 if __name__ == "__main__":

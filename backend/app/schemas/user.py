@@ -56,7 +56,14 @@ class UserResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class MessageResponse(BaseModel):
+    message: str
+
 class Token(BaseModel):
     access_token: str
     token_type: str
     user: UserResponse
+

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.schemas.user import UserCreate, UserLogin, UserResponse, UserUpdate, PasswordUpdate, Token
+from app.schemas.user import UserCreate, UserLogin, UserResponse, UserUpdate, PasswordUpdate, Token, ForgotPasswordRequest, MessageResponse
 from app.models.user import User
 from app.services.auth_service import authenticate_user, get_password_hash, is_strong_password, register_user, verify_password
 from app.database.session import get_db
@@ -137,10 +137,10 @@ def change_password(password_data: PasswordUpdate, current_user: User = Depends(
     db.refresh(current_user)
     return current_user
 
-@router.post("/forgot-password")
-def forgot_password(payload: dict, db: Session = Depends(get_db)):
+@router.post("/forgot-password", response_model=MessageResponse)
+def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
     """Request a password reset (always returns 200 to prevent email enumeration)."""
-    email = payload.get("email", "")
-    user = db.query(User).filter(User.email == email).first()
+    user = db.query(User).filter(User.email == payload.email).first()
     # Always return success to prevent email enumeration
     return {"message": "If that email exists, a reset link has been sent."}
+

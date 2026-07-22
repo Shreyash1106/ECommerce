@@ -2,13 +2,22 @@ from typing import List
 from fastapi import APIRouter, Depends, status, File, UploadFile, Query, Path, HTTPException
 from sqlalchemy.orm import Session
 
-from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
+from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse, CategoryInfo
 from app.services import product_service
 from app.database.session import get_db
 from app.core.security import get_current_user, get_current_vendor_or_admin_user
 from app.models.user import User
+from app.models.category import Category
 
 router = APIRouter(tags=["Products"])
+
+@router.get("/categories/list", response_model=List[CategoryInfo])
+def get_categories(db: Session = Depends(get_db)):
+    """Get all available categories."""
+    try:
+        return db.query(Category).all()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 def create_product(
@@ -19,6 +28,8 @@ def create_product(
     """Create a new product (admin/vendor only)."""
     try:
         return product_service.create_product(db, product_in)
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

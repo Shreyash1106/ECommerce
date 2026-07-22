@@ -9,7 +9,7 @@ from app.core.security import get_current_user
 
 router = APIRouter(prefix="/inventory", tags=["Inventory"])
 
-@router.get("/", response_model=List[InventoryResponse])
+@router.get("", response_model=List[InventoryResponse])
 def list_inventory(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     return inventory_service.get_inventory(db, skip, limit)
 
@@ -21,7 +21,7 @@ def low_stock_items(db: Session = Depends(get_db), current_user = Depends(get_cu
 def get_inventory_by_product(product_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     return inventory_service.get_inventory_by_product(db, product_id)
 
-@router.post("/", response_model=InventoryResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=InventoryResponse, status_code=status.HTTP_201_CREATED)
 def create_inventory(payload: InventoryCreate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     return inventory_service.create_inventory(db, payload)
 
