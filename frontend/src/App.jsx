@@ -2,9 +2,10 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth.jsx";
 
-// Layout
-import Sidebar from "./components/layout/Sidebar.jsx";
-import Header from "./components/layout/Header.jsx";
+// Core Layout Components
+import Navbar from "./components/layout/Navbar.jsx";
+import MobileBottomNav from "./components/layout/MobileBottomNav.jsx";
+import Footer from "./components/layout/Footer.jsx";
 
 // Auth pages
 import Login from "./pages/Login.jsx";
@@ -19,18 +20,30 @@ import AdminProducts from "./pages/AdminProducts.jsx";
 import AdminOrders from "./pages/AdminOrders.jsx";
 import AdminAnalytics from "./pages/AdminAnalytics.jsx";
 import AdminNotifications from "./pages/AdminNotifications.jsx";
+import AdminCmsPage from "./pages/AdminCmsPage.jsx";
+import AdminSettingsPage from "./pages/AdminSettingsPage.jsx";
+import AdminAuditLogsPage from "./pages/AdminAuditLogsPage.jsx";
 
 // Vendor pages
 import VendorDashboard from "./pages/VendorDashboard.jsx";
 import VendorProducts from "./pages/VendorProducts.jsx";
 import VendorOrders from "./pages/VendorOrders.jsx";
 import VendorAnalytics from "./pages/VendorAnalytics.jsx";
+import VendorWalletPage from "./pages/VendorWalletPage.jsx";
+import VendorProfilePage from "./pages/VendorProfilePage.jsx";
+import VendorReviewsPage from "./pages/VendorReviewsPage.jsx";
 
-// Other pages
+// Marketplace & Customer pages
+import CustomerHome from "./pages/CustomerHome.jsx";
 import SearchResults from "./pages/SearchResults.jsx";
 import ProductDetail from "./pages/ProductDetail.jsx";
+import CartPage from "./pages/CartPage.jsx";
+import CheckoutPage from "./pages/CheckoutPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
-import CustomerHome from "./pages/CustomerHome.jsx";
+import WishlistPage from "./pages/WishlistPage.jsx";
+import OrderHistoryPage from "./pages/OrderHistoryPage.jsx";
+import OrderSuccessPage from "./pages/OrderSuccessPage.jsx";
+import ReturnsPage from "./pages/ReturnsPage.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
 const AUTH_ROUTES = ["/login", "/register", "/forgot-password"];
@@ -50,72 +63,75 @@ function AppLayout() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-950 selection:bg-indigo-500/30 selection:text-indigo-200">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden relative">
-        <Header />
-        <main className="flex-1 overflow-y-auto relative z-0">
-          {/* Subtle global top glow */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] bg-indigo-600/10 blur-[120px] pointer-events-none -z-10" />
-          
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-between font-sans selection:bg-blue-500/20 selection:text-blue-900">
+      <div>
+        <Navbar />
+        <main className="flex-1 pb-12">
           <Routes>
             {/* Root redirect */}
             <Route path="/" element={<RootRedirect />} />
 
-            {/* Admin */}
+            {/* Marketplace Customer Pages */}
+            <Route path="/home" element={<CustomerHome />} />
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><CheckoutPage /></RequireAuth>} />
+            <Route path="/profile" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><ProfilePage /></RequireAuth>} />
+            <Route path="/wishlist" element={<WishlistPage />} />
+            <Route path="/orders" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><OrderHistoryPage /></RequireAuth>} />
+            <Route path="/order-success" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><OrderSuccessPage /></RequireAuth>} />
+            <Route path="/returns" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><ReturnsPage /></RequireAuth>} />
+
+            {/* Admin Hub */}
             <Route path="/admin/dashboard" element={<RequireAuth allowedRoles={["admin"]}><AdminDashboard /></RequireAuth>} />
             <Route path="/admin/users" element={<RequireAuth allowedRoles={["admin"]}><AdminUsers /></RequireAuth>} />
             <Route path="/admin/products" element={<RequireAuth allowedRoles={["admin"]}><AdminProducts /></RequireAuth>} />
             <Route path="/admin/orders" element={<RequireAuth allowedRoles={["admin"]}><AdminOrders /></RequireAuth>} />
             <Route path="/admin/analytics" element={<RequireAuth allowedRoles={["admin"]}><AdminAnalytics /></RequireAuth>} />
             <Route path="/admin/notifications" element={<RequireAuth allowedRoles={["admin"]}><AdminNotifications /></RequireAuth>} />
+            <Route path="/admin/cms" element={<RequireAuth allowedRoles={["admin"]}><AdminCmsPage /></RequireAuth>} />
+            <Route path="/admin/settings" element={<RequireAuth allowedRoles={["admin"]}><AdminSettingsPage /></RequireAuth>} />
+            <Route path="/admin/audit-logs" element={<RequireAuth allowedRoles={["admin"]}><AdminAuditLogsPage /></RequireAuth>} />
 
-            {/* Vendor */}
+            {/* Vendor Hub */}
             <Route path="/vendor/dashboard" element={<RequireAuth allowedRoles={["vendor"]}><VendorDashboard /></RequireAuth>} />
             <Route path="/vendor/products" element={<RequireAuth allowedRoles={["vendor"]}><VendorProducts /></RequireAuth>} />
             <Route path="/vendor/orders" element={<RequireAuth allowedRoles={["vendor"]}><VendorOrders /></RequireAuth>} />
             <Route path="/vendor/analytics" element={<RequireAuth allowedRoles={["vendor"]}><VendorAnalytics /></RequireAuth>} />
+            <Route path="/vendor/wallet" element={<RequireAuth allowedRoles={["vendor"]}><VendorWalletPage /></RequireAuth>} />
+            <Route path="/vendor/profile" element={<RequireAuth allowedRoles={["vendor"]}><VendorProfilePage /></RequireAuth>} />
+            <Route path="/vendor/reviews" element={<RequireAuth allowedRoles={["vendor"]}><VendorReviewsPage /></RequireAuth>} />
 
-            {/* Customer */}
-            <Route path="/home" element={<RequireAuth allowedRoles={["customer"]}><CustomerHome /></RequireAuth>} />
-            <Route path="/profile" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><ProfilePage /></RequireAuth>} />
-            <Route path="/search" element={<SearchResults />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-
-            {/* Unauthorized */}
+            {/* System */}
             <Route path="/unauthorized" element={<Unauthorized />} />
-
-            {/* Catch auth routes inside main layout (redirect) */}
-            <Route path="/login" element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="/register" element={<Navigate to="/admin/dashboard" replace />} />
-
-            {/* 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
       </div>
+
+      <Footer />
+      <MobileBottomNav />
     </div>
   );
 }
 
 function RootRedirect() {
   const { user, loading } = useAuth();
-  if (loading) return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-2 border-gray-700 border-t-indigo-500 rounded-full animate-spin" /></div>;
-  if (!user) return <Navigate to="/login" replace />;
+  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
+  if (!user) return <Navigate to="/home" replace />;
   
   if (user.role === "vendor") return <Navigate to="/vendor/dashboard" replace />;
   if (user.role === "admin") return <Navigate to="/admin/dashboard" replace />;
-  if (user.role === "customer") return <Navigate to="/home" replace />;
-  
-  return <Navigate to="/login" replace />;
+  return <Navigate to="/home" replace />;
 }
 
 function RequireAuth({ children, allowedRoles }) {
   const { user, loading } = useAuth();
   const location = useLocation();
   if (loading) return (
-    <div className="flex items-center justify-center h-full">
-      <div className="w-8 h-8 border-2 border-gray-700 border-t-indigo-500 rounded-full animate-spin" />
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
     </div>
   );
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;

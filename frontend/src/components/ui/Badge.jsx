@@ -1,14 +1,14 @@
 import React from "react";
 
 const variants = {
-  default: "bg-gray-700/50 text-gray-300 border border-gray-600/50",
-  indigo: "bg-indigo-500/15 text-indigo-400 border border-indigo-500/30",
-  blue: "bg-blue-500/15 text-blue-400 border border-blue-500/30",
-  green: "bg-green-500/15 text-green-400 border border-green-500/30",
-  yellow: "bg-yellow-500/15 text-yellow-400 border border-yellow-500/30",
-  red: "bg-red-500/15 text-red-400 border border-red-500/30",
-  purple: "bg-purple-500/15 text-purple-400 border border-purple-500/30",
-  orange: "bg-orange-500/15 text-orange-400 border border-orange-500/30",
+  default: "bg-slate-100 text-slate-700 border border-slate-200",
+  indigo: "bg-indigo-50 text-indigo-700 border border-indigo-200",
+  blue: "bg-blue-50 text-blue-700 border border-blue-200",
+  green: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  yellow: "bg-amber-50 text-amber-800 border border-amber-300",
+  red: "bg-rose-50 text-rose-700 border border-rose-200",
+  purple: "bg-purple-50 text-purple-700 border border-purple-200",
+  orange: "bg-orange-50 text-orange-700 border border-orange-200",
 };
 
 const statusMap = {

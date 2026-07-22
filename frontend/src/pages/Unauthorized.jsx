@@ -18,36 +18,36 @@ export default function Unauthorized() {
     } else if (user?.role === "vendor") {
       navigate("/vendor/dashboard");
     } else {
-      navigate("/profile");
+      navigate("/home");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
-      <div className="max-w-md w-full text-center">
-        <div className="w-20 h-20 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <ShieldX size={40} className="text-red-400" />
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
+      <div className="max-w-md w-full text-center bg-white border border-slate-200/80 p-8 rounded-3xl shadow-sm">
+        <div className="w-20 h-20 bg-rose-50 border border-rose-200 rounded-3xl flex items-center justify-center mx-auto mb-6">
+          <ShieldX size={40} className="text-rose-600" />
         </div>
         
-        <h1 className="text-3xl font-bold text-white mb-3">Access Denied</h1>
-        <p className="text-gray-400 mb-8">
+        <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Access Denied</h1>
+        <p className="text-slate-500 text-xs mb-8">
           You don't have permission to access this page. Please contact your administrator if you believe this is an error.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={handleGoHome}
-            className="flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-xl px-6 py-3 transition-all"
+            className="btn-primary text-xs font-bold"
           >
-            <Home size={18} />
-            Go to Dashboard
+            <Home size={16} />
+            Go to Home
           </button>
           
           <button
             onClick={handleLogout}
-            className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white font-medium rounded-xl px-6 py-3 transition-all"
+            className="btn-danger text-xs font-bold"
           >
-            <LogOut size={18} />
+            <LogOut size={16} />
             Sign Out
           </button>
         </div>

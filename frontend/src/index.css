@@ -6,67 +6,64 @@
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
-    @apply bg-gray-950 text-gray-100 font-sans antialiased;
+    @apply bg-slate-50 text-slate-900 font-sans antialiased selection:bg-blue-500/20 selection:text-blue-900;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { @apply bg-gray-900; }
-  ::-webkit-scrollbar-thumb { @apply bg-gray-600 rounded-full; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-gray-500; }
+  ::-webkit-scrollbar-track { @apply bg-slate-100; }
+  ::-webkit-scrollbar-thumb { @apply bg-slate-300 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-slate-400; }
 }
 
 @layer components {
-  .sidebar-link {
-    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400
-    hover:text-white hover:bg-white/5 transition-all duration-150 cursor-pointer;
-  }
-  .sidebar-link.active {
-    @apply text-white bg-indigo-600/20 border border-indigo-500/30;
-  }
   .stat-card {
-    @apply bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors;
+    @apply bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-200;
   }
   .data-table th {
-    @apply px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider;
+    @apply px-4 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-50/90 border-b border-slate-200;
   }
   .data-table td {
-    @apply px-4 py-3.5 text-sm text-gray-300;
+    @apply px-4 py-4 text-sm text-slate-700 border-b border-slate-100;
   }
   .data-table tr:hover td {
-    @apply bg-gray-800/50;
+    @apply bg-slate-50/70;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 min-w-[100px] whitespace-nowrap bg-indigo-600 hover:bg-indigo-500
-    text-white text-base font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 whitespace-nowrap bg-blue-600 hover:bg-blue-700 active:bg-blue-800
+    text-white font-bold text-sm rounded-xl shadow-md shadow-blue-600/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-amber {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 whitespace-nowrap bg-amber-500 hover:bg-amber-600 active:bg-amber-700
+    text-slate-950 font-extrabold text-sm rounded-xl shadow-md shadow-amber-500/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 min-w-[100px] whitespace-nowrap bg-gray-800 hover:bg-gray-700
-    text-gray-300 text-base font-medium rounded-lg border border-gray-700 transition-colors;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 whitespace-nowrap bg-white hover:bg-slate-50 active:bg-slate-100
+    text-slate-700 text-sm font-semibold rounded-xl border border-slate-300 shadow-sm transition-all duration-200;
   }
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 min-w-[100px] whitespace-nowrap bg-red-600/20 hover:bg-red-600/30
-    text-red-400 text-base font-medium rounded-lg border border-red-500/30 transition-colors;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 whitespace-nowrap bg-rose-50 hover:bg-rose-100 active:bg-rose-200
+    text-rose-600 text-sm font-semibold rounded-xl border border-rose-200 transition-all duration-200;
   }
   .input-field {
-    @apply w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white
-    placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all;
+    @apply w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-900
+    placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-all shadow-sm;
   }
   .modal-overlay {
-    @apply fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+    @apply fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4;
   }
   .modal-card {
-    @apply bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-lg shadow-2xl;
+    @apply bg-white border border-slate-200 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden;
   }
   .badge {
-    @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold;
   }
   .page-container {
-    @apply p-6 space-y-6 min-h-full;
+    @apply p-6 space-y-6 min-h-full bg-slate-50;
   }
   .section-card {
-    @apply bg-gray-900 border border-gray-800 rounded-xl overflow-hidden;
+    @apply bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden;
   }
   .skeleton {
-    @apply animate-pulse bg-gray-800 rounded;
+    @apply animate-pulse bg-slate-200 rounded-xl;
   }
 }

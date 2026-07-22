@@ -8,15 +8,15 @@ export default function Pagination({ page, total, pageSize = 10, onChange }) {
   const end = Math.min(page * pageSize, total);
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-800">
-      <p className="text-xs text-gray-500">
-        Showing <span className="text-gray-300">{start}–{end}</span> of <span className="text-gray-300">{total}</span>
+    <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 font-sans">
+      <p className="text-xs text-slate-500">
+        Showing <span className="font-bold text-slate-900">{start}–{end}</span> of <span className="font-bold text-slate-900">{total}</span>
       </p>
       <div className="flex items-center gap-1">
         <button
           onClick={() => onChange(page - 1)}
           disabled={page === 1}
-          className="p-1.5 rounded-md hover:bg-gray-800 text-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronLeft size={16} />
         </button>
@@ -26,8 +26,8 @@ export default function Pagination({ page, total, pageSize = 10, onChange }) {
             <button
               key={p}
               onClick={() => onChange(p)}
-              className={`w-7 h-7 rounded-md text-xs font-medium transition-colors ${
-                p === page ? "bg-indigo-600 text-white" : "hover:bg-gray-800 text-gray-400"
+              className={`w-7 h-7 rounded-lg text-xs font-bold transition-colors ${
+                p === page ? "bg-blue-600 text-white shadow-sm" : "hover:bg-slate-100 text-slate-600"
               }`}
             >
               {p}
@@ -37,7 +37,7 @@ export default function Pagination({ page, total, pageSize = 10, onChange }) {
         <button
           onClick={() => onChange(page + 1)}
           disabled={page === totalPages}
-          className="p-1.5 rounded-md hover:bg-gray-800 text-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronRight size={16} />
         </button>

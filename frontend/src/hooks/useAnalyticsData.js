@@ -15,30 +15,30 @@ const fetchJSON = async (endpoint) => {
 
 /** Overview KPIs */
 export const useAnalyticsOverview = () => {
-  return useQuery(['analytics', 'overview'], () => fetchJSON('/analytics/overview'));
+  return useQuery({ queryKey: ['analytics', 'overview'], queryFn: () => fetchJSON('/analytics/overview') });
 };
 
 /** Revenue time‑series data */
 export const useRevenueSeries = () => {
-  return useQuery(['analytics', 'revenueSeries'], () => fetchJSON('/analytics/revenue'));
+  return useQuery({ queryKey: ['analytics', 'revenueSeries'], queryFn: () => fetchJSON('/analytics/revenue') });
 };
 
 /** Orders time‑series data */
 export const useOrdersSeries = () => {
-  return useQuery(['analytics', 'ordersSeries'], () => fetchJSON('/analytics/orders'));
+  return useQuery({ queryKey: ['analytics', 'ordersSeries'], queryFn: () => fetchJSON('/analytics/orders') });
 };
 
 /** Customer growth series */
 export const useCustomerSeries = () => {
-  return useQuery(['analytics', 'customerSeries'], () => fetchJSON('/analytics/customers'));
+  return useQuery({ queryKey: ['analytics', 'customerSeries'], queryFn: () => fetchJSON('/analytics/customers') });
 };
 
 /** Sales by category */
 export const useCategorySales = () => {
-  return useQuery(['analytics', 'categorySales'], () => fetchJSON('/analytics/categories'));
+  return useQuery({ queryKey: ['analytics', 'categorySales'], queryFn: () => fetchJSON('/analytics/categories') });
 };
 
 /** Top products */
 export const useTopProducts = () => {
-  return useQuery(['analytics', 'topProducts'], () => fetchJSON('/analytics/top-products'));
+  return useQuery({ queryKey: ['analytics', 'topProducts'], queryFn: () => fetchJSON('/analytics/top-products') });
 };

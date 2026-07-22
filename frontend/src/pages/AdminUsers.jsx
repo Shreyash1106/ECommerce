@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 
 const ROLES = ["All", "admin", "vendor", "customer"];
 const PAGE_SIZE = 7;
-const AVATAR_COLORS = ["bg-indigo-600","bg-blue-600","bg-purple-600","bg-green-600","bg-orange-600","bg-red-600","bg-cyan-600","bg-pink-600"];
+const AVATAR_COLORS = ["bg-amber-600","bg-indigo-600","bg-blue-600","bg-purple-600","bg-green-600","bg-rose-600"];
 const initials = (name) => name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
 export default function AdminUsers() {
@@ -38,7 +38,6 @@ export default function AdminUsers() {
     onError: (err) => toast.error(err.response?.data?.detail || "Failed to delete user."),
   });
 
-  // Fetch selected user's profile when modal opens
   const { data: profileData, isLoading: profileLoading, isError: profileError } = useQuery({
     queryKey: ["adminUserProfile", profileTarget?.id],
     queryFn: () => client.get(`/admin/users/${profileTarget?.id}/profile`).then(r => r.data),
@@ -69,11 +68,11 @@ export default function AdminUsers() {
   );
 
   return (
-    <div className="min-h-screen text-white pb-10 px-8 py-8">
+    <div className="min-h-screen text-slate-900 pb-10 px-8 py-8 bg-slate-50">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Users</h1>
-          <p className="text-gray-400 text-sm mt-1">{filtered.length} total users</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Users</h1>
+          <p className="text-slate-500 text-sm mt-1">{filtered.length} total registered accounts</p>
         </div>
       </div>
 
@@ -82,22 +81,22 @@ export default function AdminUsers() {
           <button key={r} onClick={() => { setRoleFilter(r); setPage(1); }}
             className={`px-5 py-4 text-left transition-all duration-200 rounded-2xl border ${
               roleFilter === r 
-                ? "bg-indigo-500/10 border-indigo-500/30 shadow-[0_0_15px_rgba(79,70,229,0.15)]" 
-                : "bg-gray-900/40 backdrop-blur-md border-white/5 hover:bg-white/5 hover:border-white/10"
+                ? "bg-amber-50 border-amber-300 shadow-sm" 
+                : "bg-white border-slate-200 hover:bg-slate-50"
             }`}>
-            <p className={`text-2xl font-bold ${roleFilter === r ? "text-indigo-400" : "text-white"}`}>{roleCounts[r]}</p>
-            <p className="text-xs font-semibold text-gray-400 tracking-wider uppercase mt-1">{r === "All" ? "Total" : r + "s"}</p>
+            <p className={`text-2xl font-extrabold ${roleFilter === r ? "text-amber-800" : "text-slate-900"}`}>{roleCounts[r]}</p>
+            <p className="text-xs font-bold text-slate-500 tracking-wider uppercase mt-1">{r === "All" ? "Total" : r + "s"}</p>
           </button>
         ))}
       </div>
 
       <div className="relative max-w-sm mb-6">
-        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
         <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Search users…" className="w-full bg-gray-900/50 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all" />
+          placeholder="Search users…" className="w-full bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all shadow-sm" />
       </div>
 
-      <div className="bg-gray-900/40 backdrop-blur-md border border-white/5 rounded-2xl shadow-xl overflow-hidden">
+      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
         {filtered.length === 0 ? (
           <div className="p-8">
             <EmptyState icon={Users} title="No users found" />
@@ -107,38 +106,38 @@ export default function AdminUsers() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-white/5 bg-white/[0.01]">
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">User</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Role</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Verified</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Joined</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                  <tr className="border-b border-slate-200 bg-slate-50/80">
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">User</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Role</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Verified</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Joined</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-slate-100">
                   {paginated.map((u, i) => {
                     const fullName = `${u.first_name} ${u.last_name}`;
                     return (
-                      <tr key={u.id} className="cursor-pointer hover:bg-white/[0.02] transition-colors group" onClick={() => setProfileTarget(u)}>
+                      <tr key={u.id} className="cursor-pointer hover:bg-slate-50/80 transition-colors group" onClick={() => setProfileTarget(u)}>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-xl ${AVATAR_COLORS[i % AVATAR_COLORS.length]} flex items-center justify-center text-sm font-bold text-white flex-shrink-0 shadow-inner group-hover:scale-105 transition-transform`}>
+                            <div className={`w-10 h-10 rounded-xl ${AVATAR_COLORS[i % AVATAR_COLORS.length]} flex items-center justify-center text-sm font-bold text-white flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform`}>
                               {initials(fullName)}
                             </div>
                             <div>
-                              <p className="text-sm font-bold text-gray-200 group-hover:text-white transition-colors">{fullName}</p>
-                              <p className="text-xs font-medium text-gray-500 mt-0.5">{u.email}</p>
+                              <p className="text-sm font-bold text-slate-900 group-hover:text-amber-800 transition-colors">{fullName}</p>
+                              <p className="text-xs font-medium text-slate-500 mt-0.5">{u.email}</p>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4"><Badge status={u.role}>{u.role}</Badge></td>
                         <td className="px-6 py-4"><Badge status={u.is_verified ? "active" : "inactive"}>{u.is_verified ? "Yes" : "No"}</Badge></td>
-                        <td className="px-6 py-4 text-gray-400 text-sm font-medium">
+                        <td className="px-6 py-4 text-slate-500 text-sm font-medium">
                           {u.created_at ? new Date(u.created_at).toLocaleDateString() : "N/A"}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(u); }}
-                            className="p-2 rounded-lg hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-all">
+                            className="p-2 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all">
                             <Trash2 size={16} />
                           </button>
                         </td>
@@ -148,7 +147,7 @@ export default function AdminUsers() {
                 </tbody>
               </table>
             </div>
-            <div className="p-4 border-t border-white/5 bg-white/[0.01]">
+            <div className="p-4 border-t border-slate-100 bg-slate-50/50">
               <Pagination page={page} total={filtered.length} pageSize={PAGE_SIZE} onChange={setPage} />
             </div>
           </>
@@ -158,26 +157,27 @@ export default function AdminUsers() {
       {/* Delete confirmation modal */}
       <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Remove User" size="sm">
         <div className="text-center py-2">
-          <p className="text-sm text-gray-300 mb-1">Remove <span className="font-semibold text-white">"{deleteTarget ? `${deleteTarget.first_name} ${deleteTarget.last_name}` : ''}"</span>?</p>
-          <p className="text-xs text-gray-500 mb-5">This cannot be undone.</p>
+          <p className="text-sm text-slate-700 mb-1">Remove <span className="font-bold text-slate-900">"{deleteTarget ? `${deleteTarget.first_name} ${deleteTarget.last_name}` : ''}"</span>?</p>
+          <p className="text-xs text-slate-500 mb-5">This action cannot be undone.</p>
           <div className="flex gap-2 justify-center">
             <button onClick={() => setDeleteTarget(null)} className="btn-secondary">Cancel</button>
             <button onClick={() => deleteMutation.mutate(deleteTarget.id)} disabled={deleteMutation.isPending}
-              className="btn-danger border-red-500/50 bg-red-600/20 text-red-400">
+              className="btn-danger">
               {deleteMutation.isPending
-                ? <span className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+                ? <span className="w-4 h-4 border-2 border-rose-400/30 border-t-rose-600 rounded-full animate-spin" />
                 : "Remove"}
             </button>
           </div>
         </div>
       </Modal>
+
       {/* Profile modal */}
       <Modal open={!!profileTarget} onClose={() => setProfileTarget(null)} title="User Profile" size="md">
         <div className="p-4">
           {profileLoading && <LoadingSpinner size="lg" />}
-          {profileError && <p className="text-red-400 text-sm">Failed to load profile.</p>}
+          {profileError && <p className="text-rose-600 text-sm">Failed to load profile.</p>}
           {profileData && (
-            <div className="space-y-3">
+            <div className="space-y-3 text-slate-800 text-sm">
               <p><strong>Name:</strong> {profileData.first_name} {profileData.last_name}</p>
               <p><strong>Email:</strong> {profileData.email}</p>
               <p><strong>Role:</strong> {profileData.role}</p>
