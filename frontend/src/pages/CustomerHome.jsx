@@ -5,7 +5,7 @@ import client from "../api/client";
 import {
   Search, ShoppingBag, Flame, Sparkles, Star, ArrowRight,
   TrendingUp, Award, Zap, ChevronLeft, ChevronRight, Package,
-  ShieldCheck, Truck, Clock, Percent, Heart
+  ShieldCheck, Truck, Clock, Percent, Heart, RotateCcw, Lock, DollarSign
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ProductCard from "../components/ui/ProductCard";
@@ -15,16 +15,16 @@ import QuickViewModal from "../components/ui/QuickViewModal";
 const BANNERS = [
   {
     id: 1,
-    title: "Summer Electronics Festival",
-    subtitle: "Up to 40% OFF on Top Laptops, Smartwatches & Audio Gear",
-    cta: "Explore Tech Deals",
+    title: "Mega Summer Sale: Up to 60% Off On Electronics",
+    subtitle: "Premium Laptops, Smartphones, Headphones & Smartwatches at Unbeatable Prices",
+    cta: "Shop Now",
     badge: "Limited Time Offer",
     bg: "bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700",
     link: "/search?category_id=1",
   },
   {
     id: 2,
-    title: "Autumn Fashion Collection",
+    title: "Autumn Fashion & Apparel Collection",
     subtitle: "Discover Trending Apparel, Footwear & Designer Accessories",
     cta: "Shop Fashion",
     badge: "New Arrivals",
@@ -61,8 +61,8 @@ export default function CustomerHome() {
   const [bannerIndex, setBannerIndex] = useState(0);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
 
-  // Flash Sale countdown timer
-  const [timeLeft, setTimeLeft] = useState({ hours: 14, minutes: 32, seconds: 45 });
+  // Flash Sale countdown timer (02:45:30)
+  const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 45, seconds: 30 });
 
   useEffect(() => {
     fetchProducts();
@@ -95,7 +95,7 @@ export default function CustomerHome() {
     }
   };
 
-  const flashSaleProducts = products.filter((p) => (p.discount_percentage || 0) > 0).slice(0, 4);
+  const flashSaleProducts = products.filter((p) => (p.discount_percentage || 0) > 0).slice(0, 5);
   const featuredProducts = products.slice(0, 8);
 
   return (
@@ -103,7 +103,7 @@ export default function CustomerHome() {
       
       {/* Hero Banner Carousel */}
       <section className="relative overflow-hidden bg-slate-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 relative z-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={bannerIndex}
@@ -125,7 +125,7 @@ export default function CustomerHome() {
               <div className="pt-2">
                 <Link
                   to={BANNERS[bannerIndex].link}
-                  className="btn-amber text-sm font-extrabold px-8 py-4 flex items-center gap-2 inline-flex"
+                  className="btn-amber text-sm font-extrabold px-8 py-3.5 flex items-center gap-2 inline-flex rounded-xl"
                 >
                   {BANNERS[bannerIndex].cta} <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -148,39 +148,87 @@ export default function CustomerHome() {
         </div>
       </section>
 
+      {/* 4 Trust Badges Strip */}
+      <div className="bg-white border-b border-slate-200/80 shadow-sm py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-sans">
+          <div className="flex items-center gap-3 p-2 border-r border-slate-100 last:border-0">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+              <Truck className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-extrabold text-slate-900">24H Express Delivery</p>
+              <p className="text-[11px] text-slate-500">On selected products</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-2 border-r border-slate-100 last:border-0">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+              <RotateCcw className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-extrabold text-slate-900">7 Days Return</p>
+              <p className="text-[11px] text-slate-500">Easy return policy</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-2 border-r border-slate-100 last:border-0">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+              <Lock className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-extrabold text-slate-900">Secure Payments</p>
+              <p className="text-[11px] text-slate-500">100% encrypted checkout</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-2">
+            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
+              <DollarSign className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-extrabold text-slate-900">Best Price Guarantee</p>
+              <p className="text-[11px] text-slate-500">Unbeatable marketplace prices</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 pt-10">
         
-        {/* Flash Sale Banner Section */}
-        <section className="bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 rounded-[24px] p-6 md:p-8 shadow-xl text-slate-950">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
+        {/* Flash Sale Deals Section */}
+        <section className="bg-white border border-slate-200/80 rounded-[24px] p-6 md:p-8 shadow-sm">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-slate-950 text-amber-400 rounded-2xl shadow-md">
-                <Flame className="w-7 h-7" />
+              <div className="p-2.5 bg-rose-50 text-rose-600 rounded-2xl">
+                <Flame className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-2xl md:text-3xl font-black tracking-tight">Flash Sale - Today's Mega Deals</h2>
-                <p className="text-xs font-bold text-slate-900 mt-0.5">Huge savings on top selected items. Ends soon!</p>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Flash Deals</h2>
+                  <span className="text-xs font-bold bg-rose-100 text-rose-700 px-2.5 py-0.5 rounded-md">Live Sale</span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">Huge savings on top selected items. Ends soon!</p>
               </div>
             </div>
 
             {/* Countdown Timer */}
-            <div className="flex items-center gap-2 bg-slate-950 text-white px-5 py-2.5 rounded-2xl shadow-md font-mono">
+            <div className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl shadow-sm font-mono text-xs">
               <Clock className="w-4 h-4 text-amber-400 mr-1" />
-              <span className="font-extrabold text-base">{String(timeLeft.hours).padStart(2, "0")}h</span>:
-              <span className="font-extrabold text-base">{String(timeLeft.minutes).padStart(2, "0")}m</span>:
-              <span className="font-extrabold text-base">{String(timeLeft.seconds).padStart(2, "0")}s</span>
+              <span className="font-extrabold text-sm">{String(timeLeft.hours).padStart(2, "0")}</span>:
+              <span className="font-extrabold text-sm">{String(timeLeft.minutes).padStart(2, "0")}</span>:
+              <span className="font-extrabold text-sm">{String(timeLeft.seconds).padStart(2, "0")}</span>
             </div>
           </div>
 
           {/* Flash Sale Products Grid */}
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {[1, 2, 3, 4, 5].map((i) => (
                 <SkeletonProductCard key={i} />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {flashSaleProducts.map((product) => (
                 <ProductCard
                   key={product.id}
