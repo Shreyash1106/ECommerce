@@ -21,7 +21,7 @@ from app.models.notification import Notification
 from app.services.auth_service import get_password_hash
 
 PRODUCT_IMAGES = {
-    # Electronics (16 items)
+    # Electronics (24 items)
     "Wireless Noise Canceling Headphones": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
     "UltraSlim Smartwatch Series 7": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
     "Mechanical Gaming Keyboard RGB": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=600&q=80",
@@ -38,8 +38,16 @@ PRODUCT_IMAGES = {
     "Noise ColorFit Pro 4 Smartwatch": "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=600&q=80",
     "boAt Airdopes 141 Bluetooth Earbuds": "https://images.unsplash.com/photo-1572536147248-ac59a8abfa4d?auto=format&fit=crop&w=600&q=80",
     "Logitech HD Webcam 1080p": "https://images.unsplash.com/photo-1587826080692-f439cd0b70da?auto=format&fit=crop&w=600&q=80",
+    "Samsung Galaxy S24 Ultra 5G": "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=600&q=80",
+    "Sony WH-1000XM5 Wireless Headphones": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=600&q=80",
+    "Apple MacBook Pro 16-inch M3 Max": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80",
+    "Nintendo Switch OLED Model Console": "https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?auto=format&fit=crop&w=600&q=80",
+    "ASUS ROG Strix Gaming Laptop": "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=600&q=80",
+    "GoPro HERO12 Black Action Camera": "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?auto=format&fit=crop&w=600&q=80",
+    "Marshall Stanmore III Bluetooth Speaker": "https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=600&q=80",
+    "Kindle Paperwhite 16GB Display 6.8\"": "https://images.unsplash.com/photo-1592496431122-2349e0fbc666?auto=format&fit=crop&w=600&q=80",
 
-    # Clothing (16 items)
+    # Clothing (24 items)
     "Classic Denim Jacket": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80",
     "Cotton Casual Slim Fit Shirt": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80",
     "Running Sneakers Air Breathable": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
@@ -56,8 +64,16 @@ PRODUCT_IMAGES = {
     "Premium Silk Necktie & Cufflinks Set": "https://images.unsplash.com/photo-1589756823695-278bc923f962?auto=format&fit=crop&w=600&q=80",
     "Women's Winter Wool Trench Coat": "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?auto=format&fit=crop&w=600&q=80",
     "Formal Oxford Leather Shoes": "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=600&q=80",
+    "North Face Waterproof Summit Jacket": "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=600&q=80",
+    "Nike Air Force 1 '07 Sneakers": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=600&q=80",
+    "Ray-Ban Wayfarer Classic Sunglasses": "https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=600&q=80",
+    "Calvin Klein Slim Fit Cotton Jeans": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=600&q=80",
+    "Women's Designer Leather Handbag": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80",
+    "Lacoste Classic Polo Shirt Cotton": "https://images.unsplash.com/photo-1625910513413-56360c04f9df?auto=format&fit=crop&w=600&q=80",
+    "Timberland 6-inch Waterproof Boots": "https://images.unsplash.com/photo-1520639888713-7851133b1ed0?auto=format&fit=crop&w=600&q=80",
+    "Thermal Knitted Beanie Winter Cap": "https://images.unsplash.com/photo-1576871337622-98d48d1cf531?auto=format&fit=crop&w=600&q=80",
 
-    # Books (16 items)
+    # Books (24 items)
     "The Clean Coder: Software Craftsman": "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=600&q=80",
     "Design Patterns: Elements of Reusable OOP": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
     "Atomic Habits by James Clear": "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80",
@@ -74,8 +90,16 @@ PRODUCT_IMAGES = {
     "Ikigai: Japanese Secret to a Long and Happy Life": "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=600&q=80",
     "The Alchemist by Paulo Coelho": "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=600&q=80",
     "Start With Why by Simon Sinek": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=600&q=80",
+    "Designing Data-Intensive Applications": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
+    "The Intelligent Investor by Benjamin Graham": "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80",
+    "Man's Search for Meaning by Viktor Frankl": "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80",
+    "Sapiens: A Brief History of Humankind": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80",
+    "Microservices Patterns by Chris Richardson": "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=600&q=80",
+    "The Art of War by Sun Tzu": "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=600&q=80",
+    "Good to Great by Jim Collins": "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=600&q=80",
+    "Refactoring by Martin Fowler": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=600&q=80",
 
-    # Home & Garden (16 items)
+    # Home & Garden (24 items)
     "Stainless Steel Cookware Set 10-Piece": "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=600&q=80",
     "Smart Robot Vacuum Cleaner WiFi": "https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?auto=format&fit=crop&w=600&q=80",
     "Ergonomic Mesh Office Chair": "https://images.unsplash.com/photo-1580481074668-07356b38e9f2?auto=format&fit=crop&w=600&q=80",
@@ -92,8 +116,16 @@ PRODUCT_IMAGES = {
     "Cast Iron Dutch Oven Pot 6 Quart": "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=600&q=80",
     "Automatic Touchless Trash Can 13 Gallon": "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?auto=format&fit=crop&w=600&q=80",
     "High Pressure Shower Head with Filter": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80",
+    "Dyson V15 Detect Cordless Vacuum": "https://images.unsplash.com/photo-1558317374-067fb5f30001?auto=format&fit=crop&w=600&q=80",
+    "Breville Barista Touch Espresso Machine": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80",
+    "Instant Pot Duo 7-in-1 Pressure Cooker": "https://images.unsplash.com/photo-1585515320310-259814833e62?auto=format&fit=crop&w=600&q=80",
+    "Philips Hue Smart Color LED Bulb Starter Kit": "https://images.unsplash.com/photo-1550985616-10810253b84d?auto=format&fit=crop&w=600&q=80",
+    "Le Creuset Signature Enameled Round Dutch Oven": "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=600&q=80",
+    "Honeywell HEPA Air Purifier for Room": "https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=600&q=80",
+    "KitchenAid Artisan Stand Mixer 5-Quart": "https://images.unsplash.com/photo-1594385208974-2e75f8d7bb48?auto=format&fit=crop&w=600&q=80",
+    "Bamboo Charcuterie Cheese Board Set": "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=600&q=80",
 
-    # Sports (16 items)
+    # Sports (24 items)
     "Adjustable Dumbbell Set 50lbs": "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=600&q=80",
     "Non-Slip Yoga Mat Extra Thick": "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?auto=format&fit=crop&w=600&q=80",
     "Pro Basketball Official Size 7": "https://images.unsplash.com/photo-1519861531473-9200262188bf?auto=format&fit=crop&w=600&q=80",
@@ -110,12 +142,20 @@ PRODUCT_IMAGES = {
     "Swimming Goggles Anti-Fog UV Protection": "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=600&q=80",
     "Skateboard Complete Pro 8-inch Maple": "https://images.unsplash.com/photo-1547447134-cd3f5c716030?auto=format&fit=crop&w=600&q=80",
     "Football Official Match Size 5": "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=600&q=80",
+    "Garmin Forerunner 965 GPS Running Watch": "https://images.unsplash.com/photo-1510017803434-a899398421b3?auto=format&fit=crop&w=600&q=80",
+    "TRX All-in-One Suspension Trainer Kit": "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80",
+    "Callaway Golf Club Complete Set with Bag": "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=600&q=80",
+    "Speedo Men's Jammer Swimsuit": "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=600&q=80",
+    "Trek Marlin 7 Mountain Bike 29er": "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=600&q=80",
+    "Inflatable Stand Up Paddle Board 10'6\"": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80",
+    "Oakley Radar EV Path Sports Sunglasses": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=600&q=80",
+    "Manduka PRO Yoga Mat 6mm Extra Long": "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?auto=format&fit=crop&w=600&q=80",
 }
 
 DEFAULT_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80"
 
 def seed_database():
-    print("🌱 Starting Permanent Admin & 80 Products Database Seeding...")
+    print("🌱 Starting Permanent Admin & 120 Products Database Seeding...")
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
@@ -191,13 +231,12 @@ def seed_database():
                 db.commit()
                 db.refresh(u)
             users_list.append(u)
-        print(f"✅ Users ready: {len(users_list)} users with permanent admin credentials (shreyashtbc@gmail.com / 1234567890)")
 
         # ----------------------------------------------------
-        # 3. PRODUCTS (80 Products Total - 16 per Category)
+        # 3. PRODUCTS (120 Products Total - 24 per Category)
         # ----------------------------------------------------
         products_raw = [
-            # Electronics (16 items)
+            # Electronics (24 items)
             ("Wireless Noise Canceling Headphones", "Electronics", 199.99, "Sony", 4.8, 10.0, "Black", "Over-Ear", "Plastic/Leather"),
             ("UltraSlim Smartwatch Series 7", "Electronics", 299.00, "Apple", 4.9, 5.0, "Space Gray", "44mm", "Aluminum"),
             ("Mechanical Gaming Keyboard RGB", "Electronics", 89.50, "Logitech", 4.6, 15.0, "Black", "Full Size", "ABS Plastic"),
@@ -214,8 +253,16 @@ def seed_database():
             ("Noise ColorFit Pro 4 Smartwatch", "Electronics", 39.99, "Noise", 4.5, 20.0, "Jet Black", "1.72-inch", "Zinc Alloy"),
             ("boAt Airdopes 141 Bluetooth Earbuds", "Electronics", 24.99, "boAt", 4.4, 30.0, "Bold Black", "In-Ear", "ABS Plastic"),
             ("Logitech HD Webcam 1080p", "Electronics", 59.99, "Logitech", 4.6, 10.0, "Black", "Fixed Mount", "Plastic"),
+            ("Samsung Galaxy S24 Ultra 5G", "Electronics", 1299.00, "Samsung", 4.9, 10.0, "Titanium Gray", "6.8-inch", "Titanium/Glass"),
+            ("Sony WH-1000XM5 Wireless Headphones", "Electronics", 399.99, "Sony", 4.9, 10.0, "Silver", "Over-Ear", "Premium Synthetic Leather"),
+            ("Apple MacBook Pro 16-inch M3 Max", "Electronics", 2499.00, "Apple", 5.0, 5.0, "Space Black", "16.2-inch", "Aluminum"),
+            ("Nintendo Switch OLED Model Console", "Electronics", 349.99, "Nintendo", 4.8, 8.0, "White", "OLED 7-inch", "Plastic"),
+            ("ASUS ROG Strix Gaming Laptop", "Electronics", 1599.00, "ASUS", 4.7, 12.0, "Eclipse Gray", "16-inch 240Hz", "Aluminum/Plastic"),
+            ("GoPro HERO12 Black Action Camera", "Electronics", 399.00, "GoPro", 4.8, 10.0, "Black", "Compact", "Waterproof Rubber"),
+            ("Marshall Stanmore III Bluetooth Speaker", "Electronics", 379.99, "Marshall", 4.9, 5.0, "Black/Brass", "Home Audio", "Textured Vinyl"),
+            ("Kindle Paperwhite 16GB Display 6.8\"", "Electronics", 149.99, "Amazon", 4.8, 15.0, "Black", "6.8-inch", "Paper-like Display"),
 
-            # Clothing (16 items)
+            # Clothing (24 items)
             ("Classic Denim Jacket", "Clothing", 69.99, "Levi's", 4.4, 15.0, "Blue", "L", "Denim"),
             ("Cotton Casual Slim Fit Shirt", "Clothing", 34.50, "Tommy Hilfiger", 4.3, 10.0, "White", "M", "100% Cotton"),
             ("Running Sneakers Air Breathable", "Clothing", 119.00, "Nike", 4.7, 12.0, "Black/White", "10 US", "Mesh/Rubber"),
@@ -232,8 +279,16 @@ def seed_database():
             ("Premium Silk Necktie & Cufflinks Set", "Clothing", 29.99, "Raymond", 4.8, 10.0, "Burgundy", "Standard", "100% Silk"),
             ("Women's Winter Wool Trench Coat", "Clothing", 129.99, "Mango", 4.7, 12.0, "Camel", "L", "Wool Blend"),
             ("Formal Oxford Leather Shoes", "Clothing", 99.00, "Bata", 4.5, 10.0, "Dark Brown", "10 US", "Full Grain Leather"),
+            ("North Face Waterproof Summit Jacket", "Clothing", 249.00, "The North Face", 4.9, 10.0, "TNF Black", "L", "Gore-Tex Nylon"),
+            ("Nike Air Force 1 '07 Sneakers", "Clothing", 115.00, "Nike", 4.9, 5.0, "Triple White", "10 US", "Leather"),
+            ("Ray-Ban Wayfarer Classic Sunglasses", "Clothing", 163.00, "Ray-Ban", 4.8, 8.0, "Black/G-15", "Standard", "Acetate/Glass"),
+            ("Calvin Klein Slim Fit Cotton Jeans", "Clothing", 79.50, "Calvin Klein", 4.6, 15.0, "Dark Indigo", "32x32", "Denim Cotton"),
+            ("Women's Designer Leather Handbag", "Clothing", 159.00, "Michael Kors", 4.8, 10.0, "Luggage Brown", "Medium", "Saffiano Leather"),
+            ("Lacoste Classic Polo Shirt Cotton", "Clothing", 98.00, "Lacoste", 4.7, 10.0, "Classic Navy", "L", "Petit Piqué Cotton"),
+            ("Timberland 6-inch Waterproof Boots", "Clothing", 198.00, "Timberland", 4.9, 5.0, "Wheat Nubuck", "10.5 US", "Premium Nubuck Leather"),
+            ("Thermal Knitted Beanie Winter Cap", "Clothing", 19.99, "Carhartt", 4.8, 15.0, "Carhartt Brown", "One Size", "100% Acrylic Knit"),
 
-            # Books (16 items)
+            # Books (24 items)
             ("The Clean Coder: Software Craftsman", "Books", 38.99, "Prentice Hall", 4.9, 5.0, "Multicolor", "Paperback", "Paper"),
             ("Design Patterns: Elements of Reusable OOP", "Books", 54.00, "Addison-Wesley", 4.8, 10.0, "Hardcover", "Hardcover", "Paper"),
             ("Atomic Habits by James Clear", "Books", 21.99, "Random House", 5.0, 15.0, "White/Yellow", "Paperback", "Paper"),
@@ -250,8 +305,16 @@ def seed_database():
             ("Ikigai: Japanese Secret to a Long and Happy Life", "Books", 17.00, "Penguin", 4.8, 12.0, "Blue/Floral", "Hardcover", "Paper"),
             ("The Alchemist by Paulo Coelho", "Books", 12.99, "HarperOne", 4.9, 10.0, "Blue/Yellow", "Paperback", "Paper"),
             ("Start With Why by Simon Sinek", "Books", 16.50, "Portfolio", 4.7, 10.0, "White/Red", "Paperback", "Paper"),
+            ("Designing Data-Intensive Applications", "Books", 49.99, "O'Reilly Media", 5.0, 5.0, "Animal Print", "Paperback", "Paper"),
+            ("The Intelligent Investor by Benjamin Graham", "Books", 22.99, "Harper Business", 4.8, 10.0, "Black/Gold", "Paperback", "Paper"),
+            ("Man's Search for Meaning by Viktor Frankl", "Books", 13.99, "Beacon Press", 4.9, 15.0, "White/Blue", "Paperback", "Paper"),
+            ("Sapiens: A Brief History of Humankind", "Books", 24.50, "Harper", 4.9, 10.0, "Yellow/White", "Paperback", "Paper"),
+            ("Microservices Patterns by Chris Richardson", "Books", 47.99, "Manning", 4.8, 10.0, "Black/Orange", "Paperback", "Paper"),
+            ("The Art of War by Sun Tzu", "Books", 9.99, "Shambhala", 4.7, 20.0, "Red/Black", "Paperback", "Paper"),
+            ("Good to Great by Jim Collins", "Books", 29.99, "Harper Business", 4.8, 10.0, "Red/White", "Hardcover", "Paper"),
+            ("Refactoring by Martin Fowler", "Books", 52.00, "Addison-Wesley", 4.9, 8.0, "Green/White", "Hardcover", "Paper"),
 
-            # Home & Garden (16 items)
+            # Home & Garden (24 items)
             ("Stainless Steel Cookware Set 10-Piece", "Home & Garden", 159.99, "Cuisinart", 4.6, 10.0, "Silver", "10-Piece", "Stainless Steel"),
             ("Smart Robot Vacuum Cleaner WiFi", "Home & Garden", 249.99, "iRobot", 4.5, 20.0, "Black", "Standard", "Plastic"),
             ("Ergonomic Mesh Office Chair", "Home & Garden", 189.00, "Herman Miller", 4.8, 15.0, "Black", "Adjustable", "Mesh/Steel"),
@@ -268,8 +331,16 @@ def seed_database():
             ("Cast Iron Dutch Oven Pot 6 Quart", "Home & Garden", 69.99, "Lodge", 4.9, 10.0, "Enameled Red", "6 Quart", "Cast Iron"),
             ("Automatic Touchless Trash Can 13 Gallon", "Home & Garden", 54.99, "iTouchless", 4.6, 15.0, "Stainless Steel", "13 Gallon", "Stainless Steel"),
             ("High Pressure Shower Head with Filter", "Home & Garden", 28.99, "AquaBliss", 4.6, 20.0, "Chrome", "Standard", "ABS Chrome"),
+            ("Dyson V15 Detect Cordless Vacuum", "Home & Garden", 749.99, "Dyson", 4.9, 5.0, "Yellow/Nickel", "Laser Detect", "ABS Plastic"),
+            ("Breville Barista Touch Espresso Machine", "Home & Garden", 999.95, "Breville", 4.9, 5.0, "Brushed Stainless Steel", "2 Liter", "Stainless Steel"),
+            ("Instant Pot Duo 7-in-1 Pressure Cooker", "Home & Garden", 89.99, "Instant Pot", 4.8, 10.0, "Stainless Steel", "6 Quart", "Stainless Steel"),
+            ("Philips Hue Smart Color LED Bulb Starter Kit", "Home & Garden", 159.99, "Philips Hue", 4.7, 12.0, "16 Million Colors", "A19 E26", "Glass/Plastic"),
+            ("Le Creuset Signature Enameled Round Dutch Oven", "Home & Garden", 419.95, "Le Creuset", 5.0, 5.0, "Cerise Red", "5.5 Quart", "Enameled Cast Iron"),
+            ("Honeywell HEPA Air Purifier for Room", "Home & Garden", 129.99, "Honeywell", 4.7, 15.0, "Black", "Extra Large Room", "BPA Free Plastic"),
+            ("KitchenAid Artisan Stand Mixer 5-Quart", "Home & Garden", 449.99, "KitchenAid", 4.9, 5.0, "Empire Red", "5-Quart", "Die-Cast Zinc"),
+            ("Bamboo Charcuterie Cheese Board Set", "Home & Garden", 34.99, "Smirly", 4.6, 15.0, "Natural Bamboo", "Large Slide Out", "100% Organic Bamboo"),
 
-            # Sports (16 items)
+            # Sports (24 items)
             ("Adjustable Dumbbell Set 50lbs", "Sports", 299.99, "Bowflex", 4.9, 10.0, "Black/Red", "Pair", "Steel/Cast Iron"),
             ("Non-Slip Yoga Mat Extra Thick", "Sports", 27.50, "Liforme", 4.6, 15.0, "Purple", "6mm", "Eco-TPE"),
             ("Pro Basketball Official Size 7", "Sports", 32.99, "Spalding", 4.7, 10.0, "Orange", "Size 7", "Composite Leather"),
@@ -286,6 +357,14 @@ def seed_database():
             ("Swimming Goggles Anti-Fog UV Protection", "Sports", 18.99, "Speedo", 4.6, 15.0, "Clear/Blue", "Universal", "Silicone/Polycarbonate"),
             ("Skateboard Complete Pro 8-inch Maple", "Sports", 59.99, "Element", 4.7, 10.0, "Multicolor", "8.0 inch", "7-Ply Maple"),
             ("Football Official Match Size 5", "Sports", 29.99, "Adidas", 4.8, 10.0, "White/Black", "Size 5", "PU Leather"),
+            ("Garmin Forerunner 965 GPS Running Watch", "Sports", 599.99, "Garmin", 4.9, 5.0, "Black Titanium", "1.4-inch AMOLED", "Titanium/Silicone"),
+            ("TRX All-in-One Suspension Trainer Kit", "Sports", 169.95, "TRX", 4.8, 10.0, "Black/Yellow", "Pro System", "Industrial Grade Nylon"),
+            ("Callaway Golf Club Complete Set with Bag", "Sports", 549.99, "Callaway", 4.8, 10.0, "Black/Blue", "10-Piece Set", "Graphite/Steel"),
+            ("Speedo Men's Jammer Swimsuit", "Sports", 39.50, "Speedo", 4.7, 15.0, "Black/Gold", "32 Size", "Endurance+ Polyester"),
+            ("Trek Marlin 7 Mountain Bike 29er", "Sports", 849.00, "Trek", 4.9, 5.0, "Matte Nautical Navy", "29-inch Wheels", "Alpha Silver Aluminum"),
+            ("Inflatable Stand Up Paddle Board 10'6\"", "Sports", 299.99, "SereneLife", 4.7, 12.0, "Ocean Blue", "10.6 Foot", "Double Layer Military PVC"),
+            ("Oakley Radar EV Path Sports Sunglasses", "Sports", 211.00, "Oakley", 4.9, 5.0, "Matte Black/Prizm", "Standard", "O Matter/Plutonite"),
+            ("Manduka PRO Yoga Mat 6mm Extra Long", "Sports", 138.00, "Manduka", 4.9, 5.0, "Black Sage", "71-inch 6mm", "High Density PVC"),
         ]
 
         products_list = []
@@ -323,7 +402,7 @@ def seed_database():
             products_list.append(prod)
 
         # ----------------------------------------------------
-        # 4. INVENTORY (80 Products Stock)
+        # 4. INVENTORY (120 Products Stock)
         # ----------------------------------------------------
         for prod in products_list:
             inv = db.query(Inventory).filter(Inventory.product_id == prod.id).first()
