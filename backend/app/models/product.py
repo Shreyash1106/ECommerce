@@ -18,6 +18,7 @@ class Product(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     image_url = Column(String(length=255), nullable=True)
+    is_approved = Column(Boolean, default=True, nullable=False)
 
     category = relationship("Category", back_populates="products")
     product_images = relationship("ProductImage", back_populates="product", cascade="all, delete-orphan")

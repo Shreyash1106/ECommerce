@@ -6,6 +6,7 @@ import {
   Menu, X, Sparkles, Tag, ShieldCheck, Flame, Compass
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { useDebounce } from "../../hooks/useDebounce";
 import { useStore } from "../../store/useStore";
 import { useQuery } from "@tanstack/react-query";
 import client from "../../api/client";
@@ -29,7 +30,16 @@ export default function Navbar() {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
 
+  const debouncedSearchQuery = useDebounce(searchQuery, 350);
   const dropdownRef = useRef(null);
+
+  // Auto search on debounced query change when user is typing in search bar
+  useEffect(() => {
+    if (debouncedSearchQuery.trim().length >= 2 && location.pathname.startsWith("/search")) {
+      const catParam = selectedCategory !== "All" ? `&category=${encodeURIComponent(selectedCategory)}` : "";
+      navigate(`/search?q=${encodeURIComponent(debouncedSearchQuery.trim())}${catParam}`, { replace: true });
+    }
+  }, [debouncedSearchQuery, selectedCategory]);
 
   // Sync unread notifications
   useQuery({

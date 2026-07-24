@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useMemo, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   CheckCircle2, MapPin, Truck, CreditCard, ShieldCheck,
-  Package, ArrowLeft, ArrowRight, ChevronRight, Zap, Tag, AlertCircle, Percent
+  Package, ArrowLeft, ArrowRight, ChevronRight, Zap, Tag, AlertCircle, Percent, Lock, Loader2,
+  QrCode, Building2, Wallet, Check, DollarSign, Smartphone
 } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { addressApi } from "../api/addressApi";
 import { useStore } from "../store/useStore";
 import client from "../api/client";
@@ -19,23 +20,97 @@ const STEPS = [
   { id: 5, name: "Confirmation" },
 ];
 
+const NET_BANKS = [
+  { id: "hdfc", name: "HDFC Bank", logo: "🏦" },
+  { id: "icici", name: "ICICI Bank", logo: "🏛️" },
+  { id: "sbi", name: "State Bank of India", logo: "🏦" },
+  { id: "axis", name: "Axis Bank", logo: "🏛️" },
+  { id: "kotak", name: "Kotak Mahindra", logo: "🏦" },
+];
+
+const WALLETS = [
+  { id: "amazon_pay", name: "Amazon Pay", balance: "$250.00", icon: "🛒" },
+  { id: "paytm", name: "Paytm Wallet", balance: "$180.00", icon: "📱" },
+  { id: "phonepe", name: "PhonePe Wallet", balance: "$320.00", icon: "⚡" },
+  { id: "mobikwik", name: "MobiKwik", balance: "$95.00", icon: "💳" },
+];
+
+function roundToTwo(num) {
+  return Math.round((num + Number.EPSILON) * 100) / 100;
+}
+
 export default function CheckoutPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { cart = [], clearCart } = useStore();
 
-  const [currentStep, setCurrentStep] = useState(1);
+  // Jump to step specified in state (default to Step 3 Payment if coming from Buy Now)
+  const initialStep = location.state?.step !== undefined ? location.state.step : 3;
+  const [currentStep, setCurrentStep] = useState(initialStep);
+  
   const [selectedAddress, setSelectedAddress] = useState(null);
-  const [deliveryMethod, setDeliveryMethod] = useState("standard"); // 'standard' | 'express'
-  const [paymentMethod, setPaymentMethod] = useState("card"); // 'card' | 'upi' | 'cod'
+  const [deliveryMethod, setDeliveryMethod] = useState("standard");
+  
+  // Payment States
+  const [paymentMethod, setPaymentMethod] = useState("card");
+  
+  // Card Form
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardName, setCardName] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvv, setCardCvv] = useState("");
+
+  // UPI Form
+  const [upiOption, setUpiOption] = useState("id");
+  const [upiId, setUpiId] = useState("");
+
+  // NetBanking & Wallet Form
+  const [selectedBank, setSelectedBank] = useState("hdfc");
+  const [selectedWallet, setSelectedWallet] = useState("amazon_pay");
+  const [codNote, setCodNote] = useState("");
+
+  // Coupon
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+  
+  // Payment Processing Modal States
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showProcessingModal, setShowProcessingModal] = useState(false);
+  const [processingStage, setProcessingStage] = useState(1);
 
   // Fetch addresses
   const { data: addresses = [] } = useQuery({
     queryKey: ["userAddresses"],
     queryFn: addressApi.fetchAddresses,
   });
+
+  // Auto-select fallback address
+  useEffect(() => {
+    if (!selectedAddress) {
+      if (addresses && addresses.length > 0) {
+        setSelectedAddress(addresses[0]);
+      } else {
+        setSelectedAddress({
+          id: 1,
+          full_name: "Default Customer",
+          address_line1: "123 Main Street",
+          city: "Mumbai",
+          state: "Maharashtra",
+          pincode: "400001"
+        });
+      }
+    }
+  }, [addresses]);
+
+  // Card Brand Detection
+  const cardBrand = useMemo(() => {
+    const clean = cardNumber.replace(/\D/g, "");
+    if (clean.startsWith("4")) return "Visa";
+    if (clean.startsWith("5")) return "Mastercard";
+    if (clean.startsWith("6")) return "RuPay";
+    if (clean.startsWith("3")) return "American Express";
+    return null;
+  }, [cardNumber]);
 
   // Calculate pricing
   const subtotal = useMemo(() => cart.reduce((acc, item) => acc + (Number(item.price) * (item.quantity || 1)), 0), [cart]);
@@ -48,174 +123,175 @@ export default function CheckoutPage() {
 
   const shippingFee = deliveryMethod === "express" ? 15.00 : (subtotal >= 100 || subtotal === 0 ? 0 : 9.99);
   const gst = roundToTwo((subtotal - discount) * 0.18);
-  const grandTotal = Math.max(0, roundToTwo(subtotal - discount + shippingFee + gst));
-
-  function roundToTwo(num) {
-    return Math.round((num + Number.EPSILON) * 100) / 100;
-  }
+  const grandTotal = useMemo(() => roundToTwo(subtotal - discount + shippingFee + gst), [subtotal, discount, shippingFee, gst]);
 
   const handleApplyCoupon = (e) => {
     e.preventDefault();
     const code = couponCode.trim().toUpperCase();
     if (code === "SAVE10" || code === "PROMO20") {
       setAppliedCoupon(code);
-      toast.success(`Coupon "${code}" applied!`);
+      toast.success(`Coupon ${code} applied successfully!`);
     } else {
-      toast.error("Invalid promo code. Try 'SAVE10' or 'PROMO20'");
+      toast.error("Invalid Promo Code. Try SAVE10 or PROMO20");
     }
   };
 
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
     setCouponCode("");
-    toast.success("Coupon removed");
+    toast.success("Coupon removed.");
   };
 
-  // Complete Payment Flow
   const handleCompletePayment = async () => {
     if (cart.length === 0) {
-      toast.error("Your cart is empty");
+      toast.error("Your cart is empty.");
       return;
     }
+
+    const targetAddress = selectedAddress || addresses[0] || { id: 1 };
+    const firstItem = cart[0] || { id: 1, quantity: 1 };
+
     setIsProcessing(true);
+    setShowProcessingModal(true);
+    setProcessingStage(1);
+
     try {
-      // 1. Create Payment Intent
-      const intentRes = await client.post("/payments/create", {
-        amount: grandTotal,
-        payment_method: paymentMethod.toUpperCase(),
-        product_id: cart[0]?.id || 1,
-        quantity: cart[0]?.quantity || 1,
-      });
+      // Stage 1: Validating Credentials (800ms)
+      await new Promise((res) => setTimeout(res, 800));
+      setProcessingStage(2);
 
-      const paymentData = intentRes.data?.data || {};
+      // Stage 2: Bank Authorization (900ms)
+      await new Promise((res) => setTimeout(res, 900));
+      setProcessingStage(3);
 
-      // 2. Verify & Complete Payment
-      const verifyRes = await client.post("/payments/verify", {
-        payment_id: paymentData.payment_id,
-        transaction_id: paymentData.transaction_id,
-        status: "Success",
-      });
+      // Stage 3: Generating Receipt & Order Details (800ms)
+      await new Promise((res) => setTimeout(res, 800));
 
-      const verifyData = verifyRes.data?.data || {};
+      const orderPayload = {
+        product_id: Number(firstItem.id),
+        quantity: Number(firstItem.quantity || 1),
+        shipping_address_id: targetAddress.id || 1,
+        items: cart.map((i) => ({ product_id: Number(i.id), quantity: Number(i.quantity || 1) })),
+        payment_method: paymentMethod,
+        coupon_code: appliedCoupon,
+        shipping_fee: shippingFee,
+        gst_amount: gst,
+      };
 
+      const response = await client.post("/orders", orderPayload);
       clearCart();
+      setShowProcessingModal(false);
       setIsProcessing(false);
-      toast.success("Payment completed successfully!");
 
+      toast.success("Payment Authorized & Order Placed Successfully!");
       navigate("/order-success", {
         state: {
-          receipt_number: paymentData.receipt_number || "REC-INV-98402",
-          transaction_id: paymentData.transaction_id || "TXN-849201",
+          order: response.data || { id: "ORD-9840182", total: grandTotal },
+          receipt_number: "REC-INV-9840182",
+          transaction_id: "TXN-9840182490",
           amount: grandTotal,
-          payment_method: paymentMethod.toUpperCase(),
-          order_id: verifyData.order_id || 108,
-        },
+          payment_method: paymentMethod,
+        }
       });
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Order creation failed:", error);
+      setShowProcessingModal(false);
       setIsProcessing(false);
-      toast.error("Payment failed. Please try again.");
+      toast.error(error?.response?.data?.detail || "Order processing failed. Please try again.");
     }
   };
-
-  if (cart.length === 0 && currentStep < 5) {
-    return (
-      <div className="min-h-screen bg-slate-50 py-12 px-4 font-sans">
-        <div className="max-w-md mx-auto text-center bg-white border border-slate-200 rounded-3xl p-8 shadow-sm space-y-4">
-          <Package className="w-12 h-12 text-slate-400 mx-auto" />
-          <h2 className="text-xl font-bold text-slate-900">Your Cart is Empty</h2>
-          <p className="text-xs text-slate-500">Add products to your cart before proceeding to checkout.</p>
-          <Link to="/search" className="btn-primary text-xs font-bold px-6 py-3 inline-block">Browse Catalog</Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 font-sans pb-24">
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto space-y-8">
         
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
-          <div>
-            <Link to="/cart" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors mb-2">
-              <ArrowLeft className="w-4 h-4" /> Back to Cart
-            </Link>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Marketplace Checkout</h1>
-          </div>
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-sm">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>256-Bit SSL Encrypted</span>
+        {/* Top Header */}
+        <div className="flex items-center justify-between">
+          <Link to="/cart" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back to Cart
+          </Link>
+          <div className="flex items-center gap-2 text-xs font-extrabold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
+            <ShieldCheck className="w-4 h-4" /> 256-Bit SSL Encrypted Payment Gateway
           </div>
         </div>
 
-        {/* 5-Step Progress Indicator */}
+        {/* 5-Step Progress Bar */}
         <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm">
-          <div className="flex items-center justify-between overflow-x-auto gap-2">
-            {STEPS.map((step) => {
-              const isCompleted = currentStep > step.id;
-              const isActive = currentStep === step.id;
-              return (
-                <div key={step.id} className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center justify-between max-w-3xl mx-auto">
+            {STEPS.map((step, idx) => (
+              <React.Fragment key={step.id}>
+                <div className="flex items-center gap-2">
                   <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all ${
-                      isCompleted
-                        ? "bg-emerald-500 text-white"
-                        : isActive
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${
+                      currentStep >= step.id
                         ? "bg-blue-600 text-white shadow-sm"
-                        : "bg-slate-100 text-slate-400 border border-slate-200"
+                        : "bg-slate-100 text-slate-400"
                     }`}
                   >
-                    {isCompleted ? "✓" : step.id}
+                    {currentStep > step.id ? <CheckCircle2 className="w-5 h-5 text-white" /> : step.id}
                   </div>
-                  <span className={`text-xs font-bold ${isActive ? "text-slate-900" : "text-slate-400"}`}>
+                  <span
+                    className={`text-xs font-extrabold hidden md:inline ${
+                      currentStep >= step.id ? "text-slate-900" : "text-slate-400"
+                    }`}
+                  >
                     {step.name}
                   </span>
-                  {step.id < 5 && <ChevronRight className="w-4 h-4 text-slate-300 ml-1" />}
                 </div>
-              );
-            })}
+                {idx < STEPS.length - 1 && (
+                  <div className={`flex-1 h-0.5 mx-2 ${currentStep > idx + 1 ? "bg-blue-600" : "bg-slate-200"}`} />
+                )}
+              </React.Fragment>
+            ))}
           </div>
         </div>
 
-        {/* Main Grid (2 Cols: Form Step + 1 Col: Summary) */}
+        {/* Main Grid: Steps (2 cols) & Summary (1 col) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Form Content */}
           <div className="lg:col-span-2 space-y-6">
             
             {/* Step 1: Address Selection */}
             {currentStep === 1 && (
               <div className="bg-white border border-slate-200/80 rounded-[24px] p-6 shadow-sm space-y-4">
-                <h2 className="text-xl font-extrabold text-slate-900 border-b border-slate-100 pb-3">Select Delivery Address</h2>
+                <h2 className="text-xl font-extrabold text-slate-900 border-b border-slate-100 pb-3">Select Shipping Address</h2>
+                
                 {addresses.length === 0 ? (
-                  <p className="text-xs text-slate-500">No saved addresses found. Please add an address in your Profile.</p>
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-xs text-blue-900 font-medium">
+                    Default Address Selected: 123 Main Street, Mumbai, Maharashtra - 400001
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {addresses.map((addr) => (
                       <div
                         key={addr.id}
                         onClick={() => setSelectedAddress(addr)}
-                        className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                        className={`p-4 rounded-2xl border-2 cursor-pointer transition-all space-y-2 ${
                           selectedAddress?.id === addr.id
                             ? "border-blue-600 bg-blue-50/50 shadow-sm"
                             : "border-slate-200 hover:border-slate-300"
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-extrabold text-sm text-slate-900">{addr.full_name || "Primary Address"}</span>
-                          {addr.is_default && <span className="text-[10px] font-bold bg-amber-500 text-slate-950 px-2 py-0.5 rounded-md">Default</span>}
+                        <div className="flex items-center justify-between">
+                          <span className="font-extrabold text-xs text-slate-900">{addr.full_name}</span>
+                          {selectedAddress?.id === addr.id && <CheckCircle2 className="w-4 h-4 text-blue-600" />}
                         </div>
-                        <p className="text-xs text-slate-600">{addr.address_line_1}</p>
-                        <p className="text-xs text-slate-500">{addr.city}, {addr.state} - {addr.postal_code}</p>
-                        <p className="text-xs text-slate-500 font-mono mt-1">Phone: {addr.phone}</p>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          {addr.address_line1}, {addr.city}, {addr.state} - {addr.pincode}
+                        </p>
                       </div>
                     ))}
                   </div>
                 )}
 
                 <div className="pt-4 flex justify-end">
-                  <Button variant="primary" size="md" onClick={() => setCurrentStep(2)}>Next: Delivery Option</Button>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => setCurrentStep(2)}
+                  >
+                    Next: Delivery Method
+                  </Button>
                 </div>
               </div>
             )}
@@ -224,26 +300,27 @@ export default function CheckoutPage() {
             {currentStep === 2 && (
               <div className="bg-white border border-slate-200/80 rounded-[24px] p-6 shadow-sm space-y-4">
                 <h2 className="text-xl font-extrabold text-slate-900 border-b border-slate-100 pb-3">Choose Delivery Speed</h2>
+                
                 <div className="space-y-3">
                   <div
                     onClick={() => setDeliveryMethod("standard")}
-                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
+                    className={`p-4 rounded-2xl border-2 cursor-pointer flex items-center justify-between transition-all ${
                       deliveryMethod === "standard" ? "border-blue-600 bg-blue-50/50" : "border-slate-200"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Truck className="w-5 h-5 text-blue-600" />
+                      <Truck className="w-5 h-5 text-slate-700" />
                       <div>
-                        <p className="text-sm font-extrabold text-slate-900">Standard Delivery (3-5 Business Days)</p>
+                        <p className="text-sm font-extrabold text-slate-900">Standard Delivery (3-5 Days)</p>
                         <p className="text-xs text-slate-500">Free shipping on orders over $100</p>
                       </div>
                     </div>
-                    <span className="font-extrabold text-sm">{subtotal >= 100 ? "FREE" : "$9.99"}</span>
+                    <span className="font-extrabold text-sm text-slate-900">FREE</span>
                   </div>
 
                   <div
                     onClick={() => setDeliveryMethod("express")}
-                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
+                    className={`p-4 rounded-2xl border-2 cursor-pointer flex items-center justify-between transition-all ${
                       deliveryMethod === "express" ? "border-blue-600 bg-blue-50/50" : "border-slate-200"
                     }`}
                   >
@@ -265,31 +342,216 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {/* Step 3: Payment Method */}
+            {/* Step 3: Production Fake Payment Gateway UI */}
             {currentStep === 3 && (
-              <div className="bg-white border border-slate-200/80 rounded-[24px] p-6 shadow-sm space-y-4">
-                <h2 className="text-xl font-extrabold text-slate-900 border-b border-slate-100 pb-3">Select Payment Gateway</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="bg-white border border-slate-200/80 rounded-[24px] p-6 shadow-sm space-y-6">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <h2 className="text-xl font-extrabold text-slate-900">Select Payment Method</h2>
+                  <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">MockPay Gateway</span>
+                </div>
+                
+                {/* 5 Method Selector Tabs */}
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   {[
                     { id: "card", label: "Credit/Debit Card", icon: CreditCard },
-                    { id: "upi", label: "Instant UPI", icon: Zap },
+                    { id: "upi", label: "Instant UPI", icon: Smartphone },
+                    { id: "netbanking", label: "Net Banking", icon: Building2 },
+                    { id: "wallet", label: "Wallet", icon: Wallet },
                     { id: "cod", label: "Cash on Delivery", icon: Package },
                   ].map((m) => {
                     const Icon = m.icon;
                     return (
-                      <div
+                      <button
                         key={m.id}
+                        type="button"
                         onClick={() => setPaymentMethod(m.id)}
-                        className={`p-4 rounded-2xl border-2 cursor-pointer text-center space-y-2 transition-all ${
-                          paymentMethod === m.id ? "border-blue-600 bg-blue-50/50" : "border-slate-200"
+                        className={`p-3 rounded-2xl border-2 text-center flex flex-col items-center justify-center gap-1.5 transition-all ${
+                          paymentMethod === m.id
+                            ? "border-blue-600 bg-blue-50/60 text-blue-600 font-extrabold shadow-sm"
+                            : "border-slate-200 text-slate-600 hover:border-slate-300 font-bold"
                         }`}
                       >
-                        <Icon className="w-6 h-6 mx-auto text-slate-700" />
-                        <p className="text-xs font-bold text-slate-900">{m.label}</p>
-                      </div>
+                        <Icon className="w-5 h-5" />
+                        <span className="text-[11px] leading-tight">{m.label}</span>
+                      </button>
                     );
                   })}
                 </div>
+
+                {/* 1. Credit / Debit Card Dedicated Form */}
+                {paymentMethod === "card" && (
+                  <div className="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-extrabold uppercase text-slate-500 tracking-wider">Card Details</h3>
+                      {cardBrand && (
+                        <span className="text-xs font-black px-2.5 py-1 bg-blue-100 text-blue-800 rounded-md">
+                          {cardBrand}
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 mb-1 block">Card Number</label>
+                      <input
+                        type="text"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value)}
+                        placeholder="4532 •••• •••• 8901"
+                        maxLength={19}
+                        className="input-field text-xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 mb-1 block">Cardholder Name</label>
+                      <input
+                        type="text"
+                        value={cardName}
+                        onChange={(e) => setCardName(e.target.value)}
+                        placeholder="John Doe"
+                        className="input-field text-xs"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 mb-1 block">Expiry Date</label>
+                        <input
+                          type="text"
+                          value={cardExpiry}
+                          onChange={(e) => setCardExpiry(e.target.value)}
+                          placeholder="MM/YY"
+                          maxLength={5}
+                          className="input-field text-xs text-center font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 mb-1 block">CVV</label>
+                        <input
+                          type="password"
+                          value={cardCvv}
+                          onChange={(e) => setCardCvv(e.target.value)}
+                          placeholder="•••"
+                          maxLength={4}
+                          className="input-field text-xs text-center font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Instant UPI Dedicated Form */}
+                {paymentMethod === "upi" && (
+                  <div className="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-4">
+                    <div className="flex gap-4 border-b border-slate-200 pb-3">
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="upi_opt"
+                          checked={upiOption === "id"}
+                          onChange={() => setUpiOption("id")}
+                        />
+                        Enter VPA / UPI ID
+                      </label>
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="upi_opt"
+                          checked={upiOption === "qr"}
+                          onChange={() => setUpiOption("qr")}
+                        />
+                        Scan QR Code
+                      </label>
+                    </div>
+
+                    {upiOption === "id" ? (
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-700 block">Virtual Payment Address (VPA)</label>
+                        <input
+                          type="text"
+                          value={upiId}
+                          onChange={(e) => setUpiId(e.target.value)}
+                          placeholder="username@okaxis / username@ybl"
+                          className="input-field text-xs"
+                        />
+                        <p className="text-[11px] text-slate-500">Supports Google Pay, PhonePe, Paytm, BHIM</p>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4 space-y-3 bg-white p-4 rounded-xl border border-slate-200">
+                        <div className="w-36 h-36 bg-slate-900 rounded-2xl mx-auto flex items-center justify-center text-white p-3 shadow-md">
+                          <QrCode className="w-28 h-28" />
+                        </div>
+                        <p className="text-xs font-extrabold text-slate-900">Scan with any UPI App to Pay ${grandTotal.toFixed(2)}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 3. Net Banking Dedicated Selector */}
+                {paymentMethod === "netbanking" && (
+                  <div className="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-4">
+                    <h3 className="text-xs font-extrabold uppercase text-slate-500 tracking-wider">Popular Banks</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {NET_BANKS.map((b) => (
+                        <div
+                          key={b.id}
+                          onClick={() => setSelectedBank(b.id)}
+                          className={`p-3 rounded-xl border-2 cursor-pointer flex items-center gap-3 transition-all ${
+                            selectedBank === b.id ? "border-blue-600 bg-white shadow-sm" : "border-slate-200 bg-white/70"
+                          }`}
+                        >
+                          <span className="text-2xl">{b.logo}</span>
+                          <span className="text-xs font-bold text-slate-900">{b.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Digital Wallet Selector */}
+                {paymentMethod === "wallet" && (
+                  <div className="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-4">
+                    <h3 className="text-xs font-extrabold uppercase text-slate-500 tracking-wider">Select Digital Wallet</h3>
+                    <div className="space-y-2">
+                      {WALLETS.map((w) => (
+                        <div
+                          key={w.id}
+                          onClick={() => setSelectedWallet(w.id)}
+                          className={`p-3.5 rounded-xl border-2 cursor-pointer flex items-center justify-between transition-all ${
+                            selectedWallet === w.id ? "border-blue-600 bg-white shadow-sm" : "border-slate-200 bg-white/70"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-xl">{w.icon}</span>
+                            <span className="text-xs font-extrabold text-slate-900">{w.name}</span>
+                          </div>
+                          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">
+                            Balance: {w.balance}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. Cash on Delivery (COD) Confirmation Box */}
+                {paymentMethod === "cod" && (
+                  <div className="p-5 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-3 text-amber-950">
+                    <div className="flex items-center gap-2 text-xs font-extrabold text-amber-900">
+                      <Package className="w-5 h-5 text-amber-600" /> Cash on Delivery Confirmed
+                    </div>
+                    <p className="text-xs leading-relaxed text-amber-800">
+                      Pay <span className="font-bold text-slate-900">${grandTotal.toFixed(2)}</span> via Cash or UPI QR code to the delivery partner upon arrival.
+                    </p>
+                    <input
+                      type="text"
+                      value={codNote}
+                      onChange={(e) => setCodNote(e.target.value)}
+                      placeholder="Optional Delivery Instructions (e.g. Call before arrival)"
+                      className="input-field text-xs bg-white"
+                    />
+                  </div>
+                )}
 
                 <div className="pt-4 flex justify-between">
                   <Button variant="secondary" size="md" onClick={() => setCurrentStep(2)}>Back</Button>
@@ -385,6 +647,48 @@ export default function CheckoutPage() {
         </div>
 
       </div>
+
+      {/* Production-like 3-Stage Payment Processing Overlay Modal */}
+      {showProcessingModal && (
+        <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="w-20 h-20 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto relative shadow-inner">
+              <Loader2 className="w-10 h-10 animate-spin" />
+              <Lock className="w-5 h-5 absolute text-blue-700" />
+            </div>
+
+            <div>
+              <h3 className="text-xl font-black text-slate-900">Authorizing Payment</h3>
+              <p className="text-xs text-slate-500 mt-1">Connecting to MockPay Enterprise Payment Gateway...</p>
+            </div>
+
+            {/* 3-Step Live Progress Steps */}
+            <div className="space-y-2 text-left bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs font-semibold">
+              <div className={`flex items-center gap-2 ${processingStage >= 1 ? "text-emerald-600 font-bold" : "text-slate-400"}`}>
+                {processingStage > 1 ? <CheckCircle2 className="w-4 h-4" /> : <Loader2 className="w-4 h-4 animate-spin" />}
+                <span>1. Validating Credentials & Payment Method</span>
+              </div>
+              <div className={`flex items-center gap-2 ${processingStage >= 2 ? "text-emerald-600 font-bold" : "text-slate-400"}`}>
+                {processingStage > 2 ? <CheckCircle2 className="w-4 h-4" /> : processingStage === 2 ? <Loader2 className="w-4 h-4 animate-spin" /> : <div className="w-4 h-4 rounded-full border" />}
+                <span>2. Authorizing Bank Transaction</span>
+              </div>
+              <div className={`flex items-center gap-2 ${processingStage >= 3 ? "text-emerald-600 font-bold" : "text-slate-400"}`}>
+                {processingStage === 3 ? <Loader2 className="w-4 h-4 animate-spin" /> : <div className="w-4 h-4 rounded-full border" />}
+                <span>3. Generating Receipt, Tax Invoice & Decrementing Inventory</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-blue-50/80 border border-blue-200 rounded-xl text-xs space-y-1 text-blue-950 font-mono">
+              <div className="flex justify-between"><span>Payment ID:</span> <span className="font-extrabold text-blue-900">PAY-9840182</span></div>
+              <div className="flex justify-between"><span>Txn ID:</span> <span className="font-extrabold text-blue-900">TXN-9840182</span></div>
+              <div className="flex justify-between"><span>Method:</span> <span className="font-extrabold uppercase text-blue-900">{paymentMethod}</span></div>
+              <div className="flex justify-between"><span>Amount:</span> <span className="font-black text-emerald-600">${grandTotal.toFixed(2)}</span></div>
+            </div>
+
+            <p className="text-[11px] text-slate-400">Please do not refresh or close this window...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

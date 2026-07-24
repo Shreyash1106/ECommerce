@@ -1,35 +1,57 @@
-import os
+from datetime import datetime, timedelta
+from typing import Optional, Union
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from typing import Optional
+from sqlalchemy import or_
 
+from app.core.config import settings
 from app.database.session import get_db
 from app.models.user import User
-from app.utils.jwt import verify_access_token
-from app.constants.roles import ROLE_ADMIN, ROLE_VENDOR, ROLE_CUSTOMER, VENDOR_OR_ADMIN_ROLES
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+# Role Constants
+ROLE_ADMIN = "admin"
+ROLE_VENDOR = "vendor"
+ROLE_CUSTOMER = "customer"
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+ALL_ROLES = [ROLE_ADMIN, ROLE_VENDOR, ROLE_CUSTOMER]
+VENDOR_OR_ADMIN_ROLES = [ROLE_ADMIN, ROLE_VENDOR]
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
+
+def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> User:
+    """Validate JWT token and return current user by ID, username, or email."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    user_id_str = verify_access_token(token)
-    if user_id_str is None:
-        raise credentials_exception
     try:
-        user_id = int(user_id_str)
-    except ValueError:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        sub_val: str = payload.get("sub")
+        if sub_val is None:
+            raise credentials_exception
+    except JWTError:
         raise credentials_exception
-    user = db.query(User).filter(User.id == user_id).first()
+
+    user = None
+    if str(sub_val).isdigit():
+        user = db.query(User).filter(User.id == int(sub_val)).first()
+    if not user:
+        user = db.query(User).filter(or_(User.username == str(sub_val), User.email == str(sub_val))).first()
+
     if user is None:
         raise credentials_exception
-    if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is deactivated")
+    if hasattr(user, "is_active") and not user.is_active:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user account")
+
     return user
+
+def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
+    """Ensure current user is active."""
+    return current_user
 
 def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
     """Allow access if role='admin'."""
@@ -38,45 +60,17 @@ def get_current_admin_user(current_user: User = Depends(get_current_user)) -> Us
     return current_user
 
 def get_current_vendor_user(current_user: User = Depends(get_current_user)) -> User:
-    """Allow access if role='vendor'."""
-    if current_user.role.lower() != ROLE_VENDOR:
+    """Allow access if role='vendor' or 'admin'."""
+    if current_user.role.lower() not in VENDOR_OR_ADMIN_ROLES:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Vendor privileges required")
     return current_user
 
 def get_current_customer_user(current_user: User = Depends(get_current_user)) -> User:
-    """Allow access if role='customer'."""
-    if current_user.role.lower() != ROLE_CUSTOMER:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Customer privileges required")
+    """Allow any authenticated active user to place orders."""
     return current_user
 
 def get_current_vendor_or_admin_user(current_user: User = Depends(get_current_user)) -> User:
     """Allow access if role is 'vendor' or 'admin'."""
     if current_user.role.lower() not in VENDOR_OR_ADMIN_ROLES:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin or Vendor privileges required")
-    return current_user
-
-def require_role(required_roles: list[str]):
-    """Dependency factory to require specific roles."""
-    def role_checker(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role not in required_roles:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Access restricted to roles: {', '.join(required_roles)}"
-            )
-        return current_user
-    return role_checker
-
-def check_ownership(resource_owner_id: int, current_user: User, allow_admin: bool = True) -> bool:
-    """Check if current user owns the resource or is admin."""
-    if current_user.role == ROLE_ADMIN and allow_admin:
-        return True
-    return resource_owner_id == current_user.id
-
-def require_ownership(resource_owner_id: int, current_user: User = Depends(get_current_user), allow_admin: bool = True):
-    """Dependency to require resource ownership."""
-    if not check_ownership(resource_owner_id, current_user, allow_admin):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to access this resource"
-        )
     return current_user

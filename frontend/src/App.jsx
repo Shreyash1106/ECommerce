@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth.jsx";
 
@@ -13,25 +13,25 @@ import Register from "./pages/Register.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Unauthorized from "./pages/Unauthorized.jsx";
 
-// Admin pages
-import AdminDashboard from "./pages/AdminDashboard.jsx";
-import AdminUsers from "./pages/AdminUsers.jsx";
-import AdminProducts from "./pages/AdminProducts.jsx";
-import AdminOrders from "./pages/AdminOrders.jsx";
-import AdminAnalytics from "./pages/AdminAnalytics.jsx";
-import AdminNotifications from "./pages/AdminNotifications.jsx";
-import AdminCmsPage from "./pages/AdminCmsPage.jsx";
-import AdminSettingsPage from "./pages/AdminSettingsPage.jsx";
-import AdminAuditLogsPage from "./pages/AdminAuditLogsPage.jsx";
+// Admin pages (lazy loaded)
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard.jsx"));
+const AdminUsers = lazy(() => import("./pages/AdminUsers.jsx"));
+const AdminProducts = lazy(() => import("./pages/AdminProducts.jsx"));
+const AdminOrders = lazy(() => import("./pages/AdminOrders.jsx"));
+const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics.jsx"));
+const AdminNotifications = lazy(() => import("./pages/AdminNotifications.jsx"));
+const AdminCmsPage = lazy(() => import("./pages/AdminCmsPage.jsx"));
+const AdminSettingsPage = lazy(() => import("./pages/AdminSettingsPage.jsx"));
+const AdminAuditLogsPage = lazy(() => import("./pages/AdminAuditLogsPage.jsx"));
 
-// Vendor pages
-import VendorDashboard from "./pages/VendorDashboard.jsx";
-import VendorProducts from "./pages/VendorProducts.jsx";
-import VendorOrders from "./pages/VendorOrders.jsx";
-import VendorAnalytics from "./pages/VendorAnalytics.jsx";
-import VendorWalletPage from "./pages/VendorWalletPage.jsx";
-import VendorProfilePage from "./pages/VendorProfilePage.jsx";
-import VendorReviewsPage from "./pages/VendorReviewsPage.jsx";
+// Vendor pages (lazy loaded)
+const VendorDashboard = lazy(() => import("./pages/VendorDashboard.jsx"));
+const VendorProducts = lazy(() => import("./pages/VendorProducts.jsx"));
+const VendorOrders = lazy(() => import("./pages/VendorOrders.jsx"));
+const VendorAnalytics = lazy(() => import("./pages/VendorAnalytics.jsx"));
+const VendorWalletPage = lazy(() => import("./pages/VendorWalletPage.jsx"));
+const VendorProfilePage = lazy(() => import("./pages/VendorProfilePage.jsx"));
+const VendorReviewsPage = lazy(() => import("./pages/VendorReviewsPage.jsx"));
 
 // Marketplace & Customer pages
 import CustomerHome from "./pages/CustomerHome.jsx";
@@ -47,6 +47,12 @@ import ReturnsPage from "./pages/ReturnsPage.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
 const AUTH_ROUTES = ["/login", "/register", "/forgot-password"];
+
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 function AppLayout() {
   const location = useLocation();
@@ -67,46 +73,48 @@ function AppLayout() {
       <div>
         <Navbar />
         <main className="flex-1 pb-12">
-          <Routes>
-            {/* Root redirect */}
-            <Route path="/" element={<RootRedirect />} />
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Root redirect */}
+              <Route path="/" element={<RootRedirect />} />
 
-            {/* Marketplace Customer Pages */}
-            <Route path="/home" element={<CustomerHome />} />
-            <Route path="/search" element={<SearchResults />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/checkout" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><CheckoutPage /></RequireAuth>} />
-            <Route path="/profile" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><ProfilePage /></RequireAuth>} />
-            <Route path="/wishlist" element={<WishlistPage />} />
-            <Route path="/orders" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><OrderHistoryPage /></RequireAuth>} />
-            <Route path="/order-success" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><OrderSuccessPage /></RequireAuth>} />
-            <Route path="/returns" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><ReturnsPage /></RequireAuth>} />
+              {/* Marketplace Customer Pages */}
+              <Route path="/home" element={<CustomerHome />} />
+              <Route path="/search" element={<SearchResults />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/checkout" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><CheckoutPage /></RequireAuth>} />
+              <Route path="/profile" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><ProfilePage /></RequireAuth>} />
+              <Route path="/wishlist" element={<WishlistPage />} />
+              <Route path="/orders" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><OrderHistoryPage /></RequireAuth>} />
+              <Route path="/order-success" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><OrderSuccessPage /></RequireAuth>} />
+              <Route path="/returns" element={<RequireAuth allowedRoles={["customer", "vendor", "admin"]}><ReturnsPage /></RequireAuth>} />
 
-            {/* Admin Hub */}
-            <Route path="/admin/dashboard" element={<RequireAuth allowedRoles={["admin"]}><AdminDashboard /></RequireAuth>} />
-            <Route path="/admin/users" element={<RequireAuth allowedRoles={["admin"]}><AdminUsers /></RequireAuth>} />
-            <Route path="/admin/products" element={<RequireAuth allowedRoles={["admin"]}><AdminProducts /></RequireAuth>} />
-            <Route path="/admin/orders" element={<RequireAuth allowedRoles={["admin"]}><AdminOrders /></RequireAuth>} />
-            <Route path="/admin/analytics" element={<RequireAuth allowedRoles={["admin"]}><AdminAnalytics /></RequireAuth>} />
-            <Route path="/admin/notifications" element={<RequireAuth allowedRoles={["admin"]}><AdminNotifications /></RequireAuth>} />
-            <Route path="/admin/cms" element={<RequireAuth allowedRoles={["admin"]}><AdminCmsPage /></RequireAuth>} />
-            <Route path="/admin/settings" element={<RequireAuth allowedRoles={["admin"]}><AdminSettingsPage /></RequireAuth>} />
-            <Route path="/admin/audit-logs" element={<RequireAuth allowedRoles={["admin"]}><AdminAuditLogsPage /></RequireAuth>} />
+              {/* Admin Hub */}
+              <Route path="/admin/dashboard" element={<RequireAuth allowedRoles={["admin"]}><AdminDashboard /></RequireAuth>} />
+              <Route path="/admin/users" element={<RequireAuth allowedRoles={["admin"]}><AdminUsers /></RequireAuth>} />
+              <Route path="/admin/products" element={<RequireAuth allowedRoles={["admin"]}><AdminProducts /></RequireAuth>} />
+              <Route path="/admin/orders" element={<RequireAuth allowedRoles={["admin"]}><AdminOrders /></RequireAuth>} />
+              <Route path="/admin/analytics" element={<RequireAuth allowedRoles={["admin"]}><AdminAnalytics /></RequireAuth>} />
+              <Route path="/admin/notifications" element={<RequireAuth allowedRoles={["admin"]}><AdminNotifications /></RequireAuth>} />
+              <Route path="/admin/cms" element={<RequireAuth allowedRoles={["admin"]}><AdminCmsPage /></RequireAuth>} />
+              <Route path="/admin/settings" element={<RequireAuth allowedRoles={["admin"]}><AdminSettingsPage /></RequireAuth>} />
+              <Route path="/admin/audit-logs" element={<RequireAuth allowedRoles={["admin"]}><AdminAuditLogsPage /></RequireAuth>} />
 
-            {/* Vendor Hub */}
-            <Route path="/vendor/dashboard" element={<RequireAuth allowedRoles={["vendor"]}><VendorDashboard /></RequireAuth>} />
-            <Route path="/vendor/products" element={<RequireAuth allowedRoles={["vendor"]}><VendorProducts /></RequireAuth>} />
-            <Route path="/vendor/orders" element={<RequireAuth allowedRoles={["vendor"]}><VendorOrders /></RequireAuth>} />
-            <Route path="/vendor/analytics" element={<RequireAuth allowedRoles={["vendor"]}><VendorAnalytics /></RequireAuth>} />
-            <Route path="/vendor/wallet" element={<RequireAuth allowedRoles={["vendor"]}><VendorWalletPage /></RequireAuth>} />
-            <Route path="/vendor/profile" element={<RequireAuth allowedRoles={["vendor"]}><VendorProfilePage /></RequireAuth>} />
-            <Route path="/vendor/reviews" element={<RequireAuth allowedRoles={["vendor"]}><VendorReviewsPage /></RequireAuth>} />
+              {/* Vendor Hub */}
+              <Route path="/vendor/dashboard" element={<RequireAuth allowedRoles={["vendor"]}><VendorDashboard /></RequireAuth>} />
+              <Route path="/vendor/products" element={<RequireAuth allowedRoles={["vendor"]}><VendorProducts /></RequireAuth>} />
+              <Route path="/vendor/orders" element={<RequireAuth allowedRoles={["vendor"]}><VendorOrders /></RequireAuth>} />
+              <Route path="/vendor/analytics" element={<RequireAuth allowedRoles={["vendor"]}><VendorAnalytics /></RequireAuth>} />
+              <Route path="/vendor/wallet" element={<RequireAuth allowedRoles={["vendor"]}><VendorWalletPage /></RequireAuth>} />
+              <Route path="/vendor/profile" element={<RequireAuth allowedRoles={["vendor"]}><VendorProfilePage /></RequireAuth>} />
+              <Route path="/vendor/reviews" element={<RequireAuth allowedRoles={["vendor"]}><VendorReviewsPage /></RequireAuth>} />
 
-            {/* System */}
-            <Route path="/unauthorized" element={<Unauthorized />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              {/* System */}
+              <Route path="/unauthorized" element={<Unauthorized />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
 

@@ -1,12 +1,9 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func, or_, and_, desc, asc
+from sqlalchemy import or_, desc, asc
 from fastapi import HTTPException, status
-import os
 import re
-import uuid
 import unicodedata
-from pathlib import Path
 
 from app.models.product import Product
 from app.models.inventory import Inventory
@@ -27,30 +24,107 @@ ALLOWED_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.webp'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
 def create_product(db: Session, product_in: ProductCreate) -> Product:
-    """Create a new product with validation."""
-    # Validate category exists if provided
+    """Create a new product with validation and automatic inventory creation."""
     if product_in.category_id:
         category = db.query(Category).filter(Category.id == product_in.category_id).first()
         if not category:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Category with ID {product_in.category_id} does not exist. Available categories: 1=Electronics, 2=Clothing, 3=Books, 4=Home & Garden, 5=Sports"
+                detail=f"Category with ID {product_in.category_id} does not exist."
             )
     
     db_product = Product(
         name=product_in.name,
         category_id=product_in.category_id,
         description=product_in.description,
-        price=product_in.price
+        price=product_in.price,
+        brand=product_in.brand,
+        rating=product_in.rating or 0.0,
+        discount_percentage=product_in.discount_percentage or 0.0,
+        color=product_in.color,
+        size=product_in.size,
+        material=product_in.material,
+        image_url=product_in.image_url
     )
     db.add(db_product)
     db.commit()
     db.refresh(db_product)
+
+    # Automatically create inventory record
+    stock_qty = product_in.stock if product_in.stock is not None else 0
+    inv = Inventory(
+        product_id=db_product.id,
+        quantity=stock_qty,
+        in_stock=stock_qty > 0
+    )
+    db.add(inv)
+    db.commit()
+    db.refresh(db_product)
+
     return db_product
 
-def get_products(db: Session, skip: int = 0, limit: int = 100) -> List[Product]:
-    """Get all products with pagination."""
-    return db.query(Product).options(joinedload(Product.inventory), joinedload(Product.category)).offset(skip).limit(limit).all()
+def get_products(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    q: Optional[str] = None,
+    category_id: Optional[int] = None,
+    brand: Optional[str] = None,
+    min_price: Optional[float] = None,
+    max_price: Optional[float] = None,
+    min_rating: Optional[float] = None,
+    in_stock: Optional[bool] = None,
+    sort_by: Optional[str] = "created_at"
+) -> List[Product]:
+    """Get products with comprehensive filtering and sorting."""
+    query = db.query(Product).options(joinedload(Product.inventory), joinedload(Product.category))
+
+    # 1. Search Query Filter
+    if q and q.strip():
+        search_term = f"%{q.strip()}%"
+        query = query.filter(
+            or_(
+                Product.name.ilike(search_term),
+                Product.description.ilike(search_term),
+                Product.brand.ilike(search_term)
+            )
+        )
+
+    # 2. Category Filter
+    if category_id is not None and category_id > 0:
+        query = query.filter(Product.category_id == category_id)
+
+    # 3. Brand Filter
+    if brand and brand.strip() and brand.lower() != "all":
+        query = query.filter(Product.brand.ilike(f"%{brand.strip()}%"))
+
+    # 4. Price Bounds Filter
+    if min_price is not None and min_price >= 0:
+        query = query.filter(Product.price >= min_price)
+    if max_price is not None and max_price > 0:
+        query = query.filter(Product.price <= max_price)
+
+    # 5. Rating Filter
+    if min_rating is not None and min_rating > 0:
+        query = query.filter(Product.rating >= min_rating)
+
+    # 6. In Stock Filter
+    if in_stock:
+        query = query.join(Inventory).filter(Inventory.quantity > 0)
+
+    # 7. Sorting Order
+    if sort_by == "price_asc":
+        query = query.order_by(asc(Product.price))
+    elif sort_by == "price_desc":
+        query = query.order_by(desc(Product.price))
+    elif sort_by == "rating":
+        query = query.order_by(desc(Product.rating))
+    elif sort_by == "discount":
+        query = query.order_by(desc(Product.discount_percentage))
+    else:
+        query = query.order_by(desc(Product.created_at))
+
+    return query.offset(skip).limit(limit).all()
 
 def get_product_by_id(db: Session, product_id: int) -> Product:
     """Get a product by ID with inventory and category."""
@@ -58,355 +132,61 @@ def get_product_by_id(db: Session, product_id: int) -> Product:
     if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found"
+            detail=f"Product with ID {product_id} not found"
         )
     return product
 
 def update_product(db: Session, product_id: int, product_in: ProductUpdate) -> Product:
     """Update an existing product."""
-    db_product = get_product_by_id(db, product_id)
-    
-    update_data = product_in.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(db_product, field, value)
-        
+    product = get_product_by_id(db, product_id)
+    if product_in.name is not None:
+        product.name = product_in.name
+    if product_in.description is not None:
+        product.description = product_in.description
+    if product_in.price is not None:
+        product.price = product_in.price
+    if product_in.category_id is not None:
+        product.category_id = product_in.category_id
+    if product_in.brand is not None:
+        product.brand = product_in.brand
+    if product_in.rating is not None:
+        product.rating = product_in.rating
+    if product_in.discount_percentage is not None:
+        product.discount_percentage = product_in.discount_percentage
+    if product_in.image_url is not None:
+        product.image_url = product_in.image_url
+    if product_in.color is not None:
+        product.color = product_in.color
+    if product_in.size is not None:
+        product.size = product_in.size
+    if product_in.material is not None:
+        product.material = product_in.material
+
+    if product_in.stock is not None:
+        inv = db.query(Inventory).filter(Inventory.product_id == product.id).first()
+        if not inv:
+            inv = Inventory(product_id=product.id, quantity=product_in.stock, in_stock=product_in.stock > 0)
+            db.add(inv)
+        else:
+            inv.quantity = product_in.stock
+            inv.in_stock = product_in.stock > 0
+
     db.commit()
-    db.refresh(db_product)
-    return db_product
+    db.refresh(product)
+    return product
 
 def delete_product(db: Session, product_id: int) -> None:
     """Delete a product by ID."""
-    db_product = get_product_by_id(db, product_id)
-    db.delete(db_product)
+    product = get_product_by_id(db, product_id)
+    db.delete(product)
     db.commit()
 
-def search_products(
-    db: Session,
-    query: Optional[str] = None,
-    category_id: Optional[int] = None,
-    brand: Optional[str] = None,
-    min_price: Optional[float] = None,
-    max_price: Optional[float] = None,
-    min_rating: Optional[float] = None,
-    min_discount: Optional[float] = None,
-    in_stock: Optional[bool] = None,
-    sort_by: str = "created_at",
-    sort_order: str = "desc",
-    page: int = 1,
-    limit: int = 20
-) -> Dict[str, Any]:
-    """Advanced product search with multiple filters and pagination."""
-    # Build base query with inventory join
-    q = db.query(Product).outerjoin(Inventory)
-    
-    # Search query - search in name, description, and brand
-    if query:
-        search_pattern = f"%{query}%"
-        q = q.filter(
-            or_(
-                Product.name.ilike(search_pattern),
-                Product.description.ilike(search_pattern),
-                Product.brand.ilike(search_pattern)
-            )
-        )
-    
-    # Category filter
-    if category_id:
-        q = q.filter(Product.category_id == category_id)
-    
-    # Brand filter
-    if brand:
-        q = q.filter(Product.brand.ilike(f"%{brand}%"))
-    
-    # Price range filter
-    if min_price is not None:
-        q = q.filter(Product.price >= min_price)
-    if max_price is not None:
-        q = q.filter(Product.price <= max_price)
-    
-    # Rating filter
-    if min_rating is not None:
-        q = q.filter(Product.rating >= min_rating)
-    
-    # Discount filter
-    if min_discount is not None:
-        q = q.filter(Product.discount_percentage >= min_discount)
-    
-    # Stock availability filter
-    if in_stock is not None:
-        if in_stock:
-            q = q.filter(Inventory.quantity > 0)
-        else:
-            q = q.filter(Inventory.quantity <= 0)
-    
-    # Get total count before pagination
-    total = q.count()
-    
-    # Sorting logic
-    sort_mapping = {
-        "price": Product.price,
-        "rating": Product.rating,
-        "discount": Product.discount_percentage,
-        "created_at": Product.created_at,
-        "name": Product.name,
-        "popularity": Product.rating  # Using rating as popularity proxy
-    }
-    
-    sort_field = sort_mapping.get(sort_by, Product.created_at)
-    if sort_order == "desc":
-        q = q.order_by(desc(sort_field))
-    else:
-        q = q.order_by(asc(sort_field))
-    
-    # Pagination
-    offset = (page - 1) * limit
-    products = q.offset(offset).limit(limit).all()
-    
-    # Calculate pagination metadata
-    total_pages = (total + limit - 1) // limit if total > 0 else 1
-    
-    return {
-        "products": products,
-        "total": total,
-        "page": page,
-        "limit": limit,
-        "total_pages": total_pages,
-        "has_next": page < total_pages,
-        "has_previous": page > 1
-    }
-
-
-def get_filter_metadata(db: Session) -> Dict[str, Any]:
-    """Get available filter options from database."""
-    # Get all categories
-    categories = db.query(Category).all()
-    
-    # Get all unique brands
-    brands = db.query(Product.brand).filter(Product.brand.isnot(None)).distinct().all()
-    brand_list = [b[0] for b in brands if b[0]]
-    
-    # Get price range
-    price_stats = db.query(
-        func.min(Product.price).label('min_price'),
-        func.max(Product.price).label('max_price')
-    ).first()
-    
-    # Get rating range
-    rating_stats = db.query(
-        func.min(Product.rating).label('min_rating'),
-        func.max(Product.rating).label('max_rating')
-    ).first()
-    
-    # Get discount range
-    discount_stats = db.query(
-        func.min(Product.discount_percentage).label('min_discount'),
-        func.max(Product.discount_percentage).label('max_discount')
-    ).first()
-    
-    return {
-        "categories": [{"id": c.id, "name": c.name} for c in categories],
-        "brands": sorted(brand_list),
-        "price_range": {
-            "min": float(price_stats.min_price) if price_stats.min_price else 0,
-            "max": float(price_stats.max_price) if price_stats.max_price else 0
-        },
-        "rating_range": {
-            "min": float(rating_stats.min_rating) if rating_stats.min_rating else 0,
-            "max": float(rating_stats.max_rating) if rating_stats.max_rating else 5
-        },
-        "discount_range": {
-            "min": float(discount_stats.min_discount) if discount_stats.min_discount else 0,
-            "max": float(discount_stats.max_discount) if discount_stats.max_discount else 0
-        }
-    }
-
-
-def get_filter_counts(
-    db: Session,
-    category_id: Optional[int] = None,
-    brand: Optional[str] = None,
-    min_price: Optional[float] = None,
-    max_price: Optional[float] = None,
-    min_rating: Optional[float] = None,
-    min_discount: Optional[float] = None,
-    in_stock: Optional[bool] = None,
-) -> Dict[str, Any]:
-    """Return filter options with product counts respecting current filters.
-    Counts are calculated for categories and brands; price, rating, discount ranges are unchanged.
-    """
-    base_q = db.query(Product).outerjoin(Inventory)
-    if brand:
-        base_q = base_q.filter(Product.brand.ilike(f"%{brand}%"))
-    if min_price is not None:
-        base_q = base_q.filter(Product.price >= min_price)
-    if max_price is not None:
-        base_q = base_q.filter(Product.price <= max_price)
-    if min_rating is not None:
-        base_q = base_q.filter(Product.rating >= min_rating)
-    if min_discount is not None:
-        base_q = base_q.filter(Product.discount_percentage >= min_discount)
-    if in_stock is not None:
-        if in_stock:
-            base_q = base_q.filter(Inventory.quantity > 0)
-        else:
-            base_q = base_q.filter(Inventory.quantity <= 0)
-
-    # Category counts
-    category_counts = (
-        base_q.with_entities(Product.category_id, func.count(Product.id))
-        .group_by(Product.category_id)
-        .all()
-    )
-    cat_count_map = {cat_id: cnt for cat_id, cnt in category_counts if cat_id is not None}
-
-    # Brand counts
-    brand_counts = (
-        base_q.with_entities(Product.brand, func.count(Product.id))
-        .group_by(Product.brand)
-        .all()
-    )
-    brand_count_map = {b: cnt for b, cnt in brand_counts if b}
-
-    categories = db.query(Category).all()
-    brands = db.query(Product.brand).filter(Product.brand.isnot(None)).distinct().all()
-    brand_list = [b[0] for b in brands if b[0]]
-
-    price_stats = db.query(
-        func.min(Product.price).label('min_price'),
-        func.max(Product.price).label('max_price')
-    ).first()
-    rating_stats = db.query(
-        func.min(Product.rating).label('min_rating'),
-        func.max(Product.rating).label('max_rating')
-    ).first()
-    discount_stats = db.query(
-        func.min(Product.discount_percentage).label('min_discount'),
-        func.max(Product.discount_percentage).label('max_discount')
-    ).first()
-
-    return {
-        "categories": [{
-            "id": c.id,
-            "name": c.name,
-            "count": cat_count_map.get(c.id, 0)
-        } for c in categories],
-        "brands": [{
-            "name": b,
-            "count": brand_count_map.get(b, 0)
-        } for b in sorted(brand_list)],
-        "price_range": {
-            "min": float(price_stats.min_price) if price_stats.min_price else 0,
-            "max": float(price_stats.max_price) if price_stats.max_price else 0
-        },
-        "rating_range": {
-            "min": float(rating_stats.min_rating) if rating_stats.min_rating else 0,
-            "max": float(rating_stats.max_rating) if rating_stats.max_rating else 5
-        },
-        "discount_range": {
-            "min": float(discount_stats.min_discount) if discount_stats.min_discount else 0,
-            "max": float(discount_stats.max_discount) if discount_stats.max_discount else 0
-        }
-    }
-
-
-def get_similar_products(db: Session, product_id: int, limit: int = 8) -> List[Product]:
-    """Return products from the same category as the given product, excluding itself.
-    If fewer than 4 items are found, fall back to highest‑rated products, then newest ones.
-    """
-    base_product = db.query(Product).filter(Product.id == product_id).first()
-    if not base_product:
-        raise HTTPException(status_code=404, detail="Product not found")
-    similar_q = db.query(Product).filter(
-        Product.category_id == base_product.category_id,
-        Product.id != product_id
-    )
-    similar = similar_q.limit(limit).all()
-    if len(similar) >= 4:
-        return similar
-    needed = limit - len(similar)
-    popular = (
-        db.query(Product)
-        .filter(Product.id != product_id)
-        .order_by(desc(Product.rating))
-        .limit(needed)
-        .all()
-    )
-    similar.extend(popular)
-    if len(similar) >= limit:
-        return similar[:limit]
-    needed = limit - len(similar)
-    latest = (
-        db.query(Product)
-        .filter(Product.id != product_id)
-        .order_by(desc(Product.created_at))
-        .limit(needed)
-        .all()
-    )
-    similar.extend(latest)
-    return similar[:limit]
-
-
-def get_search_suggestions(db: Session, query: str, limit: int = 10) -> List[str]:
-    """Get autocomplete suggestions for search."""
-    if not query or len(query) < 2:
-        return []
-    
-    search_pattern = f"%{query}%"
-    suggestions = db.query(Product.name).filter(
-        Product.name.ilike(search_pattern)
-    ).limit(limit).all()
-    
-    return [s[0] for s in suggestions]
-
-def upload_product_image(db: Session, product_id: int, filename: str, file_content: bytes) -> dict:
-    """Save uploaded image securely and update product.image_url."""
+def approve_product(db: Session, product_id: int, is_approved: bool = True) -> Product:
+    """Approve or reject a vendor product."""
     product = get_product_by_id(db, product_id)
-    
-    file_ext = Path(filename).suffix.lower()
-    if file_ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"File type not allowed. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
-        )
-    
-    if len(file_content) > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail="File size exceeds 5MB limit"
-        )
-    
-    try:
-        safe_name = secure_filename(filename.split('.')[0] or 'product')
-        if not safe_name:
-            safe_name = 'product'
-        unique_name = f"{uuid.uuid4().hex}_{safe_name}{file_ext}"
-        
-        base_upload_dir = Path(os.getcwd()) / "uploads"
-        base_upload_dir.mkdir(exist_ok=True, mode=0o755)
-        
-        # Resolve to absolute path and verify it stays within uploads dir
-        file_path = (base_upload_dir / unique_name).resolve()
-        base_resolved = base_upload_dir.resolve()
-        
-        if not str(file_path).startswith(str(base_resolved)):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid file path"
-            )
-        
-        with open(file_path, "wb") as f:
-            f.write(file_content)
-        
-        product.image_url = f"/uploads/{unique_name}"
-        db.commit()
-        db.refresh(product)
-        
-        return {"image_url": product.image_url}
-    
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to upload image"
-        )
+    product.is_approved = is_approved
+    db.commit()
+    db.refresh(product)
+    return product
+
+

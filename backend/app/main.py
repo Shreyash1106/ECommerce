@@ -26,6 +26,7 @@ def run_migrations():
         ("users", "notify_user_activity", "INTEGER NOT NULL DEFAULT 1"),
         ("users", "notify_system_updates", "INTEGER NOT NULL DEFAULT 1"),
         ("orders", "status", "VARCHAR(50) NOT NULL DEFAULT 'Pending'"),
+        ("products", "is_approved", "BOOLEAN NOT NULL DEFAULT TRUE"),
     ]
     inspector = inspect(engine)
     with engine.connect() as conn:
@@ -54,14 +55,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-        "http://127.0.0.1:3000"
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -98,29 +92,11 @@ app.include_router(returns.router,           prefix="/api")
 @app.get("/")
 def root():
     return {
-        "success": True,
-        "message": "Enterprise E-Commerce Marketplace API",
-        "version": "2.0.0",
-        "status": "running",
+        "status": "healthy",
+        "service": "Enterprise E-Commerce Marketplace API",
         "docs": "/docs"
     }
 
-@app.get("/api/health")
-def health():
-    return {"success": True, "status": "ok", "message": "API running cleanly"}
-
-@app.exception_handler(Exception)
-async def global_exception(request: Request, exc: Exception):
-    logger.error(f"Global Exception: {str(exc)}", exc_info=True)
-    return JSONResponse(
-        status_code=500,
-        content={
-            "success": False,
-            "message": "An unexpected server error occurred",
-            "errors": [{"field": "server", "message": str(exc)}]
-        }
-    )
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}

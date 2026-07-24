@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import client from "../api/client";
 import {
   Search, ShoppingBag, Flame, Sparkles, Star, ArrowRight,
   TrendingUp, Award, Zap, ChevronLeft, ChevronRight, Package,
-  ShieldCheck, Truck, Clock, Percent, Heart, RotateCcw, Lock, DollarSign
+  ShieldCheck, Truck, Clock, Percent, Heart, RotateCcw, Lock, DollarSign,
+  Eye, ThumbsUp, Sparkle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ProductCard from "../components/ui/ProductCard";
@@ -43,14 +44,84 @@ const BANNERS = [
 ];
 
 const CATEGORY_CARDS = [
-  { id: 1, name: "Electronics", icon: "💻", count: "1,240+ Products", color: "bg-blue-50 text-blue-600 border-blue-200" },
-  { id: 2, name: "Fashion & Clothing", icon: "👔", count: "3,850+ Products", color: "bg-amber-50 text-amber-700 border-amber-200" },
-  { id: 3, name: "Books & Stationeries", icon: "📚", count: "920+ Products", color: "bg-purple-50 text-purple-600 border-purple-200" },
-  { id: 4, name: "Home & Garden", icon: "🏡", count: "2,150+ Products", color: "bg-emerald-50 text-emerald-600 border-emerald-200" },
-  { id: 5, name: "Sports & Fitness", icon: "⚽", count: "780+ Products", color: "bg-rose-50 text-rose-600 border-rose-200" },
+  { id: 1, name: "Electronics", icon: "💻", count: "24+ Products", color: "bg-blue-50 text-blue-600 border-blue-200" },
+  { id: 2, name: "Fashion & Clothing", icon: "👔", count: "24+ Products", color: "bg-amber-50 text-amber-700 border-amber-200" },
+  { id: 3, name: "Books & Stationeries", icon: "📚", count: "24+ Products", color: "bg-purple-50 text-purple-600 border-purple-200" },
+  { id: 4, name: "Home & Garden", icon: "🏡", count: "24+ Products", color: "bg-emerald-50 text-emerald-600 border-emerald-200" },
+  { id: 5, name: "Sports & Fitness", icon: "⚽", count: "24+ Products", color: "bg-rose-50 text-rose-600 border-rose-200" },
 ];
 
-const BRANDS = ["Sony", "Apple", "Nike", "Adidas", "Samsung", "Bose", "Levi's", "Puma"];
+const BRANDS = ["Sony", "Apple", "Nike", "Adidas", "Samsung", "Bose", "Levi's", "Puma", "Dell", "Canon", "Dyson", "Garmin"];
+
+// Helper component for Horizontal Carousel
+function HorizontalProductRow({ title, subtitle, icon: Icon, products, loading, onQuickView }) {
+  const scrollRef = useRef(null);
+
+  const scroll = (direction) => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollAmount = direction === "left" ? -clientWidth * 0.75 : clientWidth * 0.75;
+      scrollRef.current.scrollTo({ left: scrollLeft + scrollAmount, behavior: "smooth" });
+    }
+  };
+
+  if (!loading && products.length === 0) return null;
+
+  return (
+    <section className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {Icon && (
+            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+              <Icon className="w-5 h-5" />
+            </div>
+          )}
+          <div>
+            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">{title}</h2>
+            {subtitle && <p className="text-xs text-slate-500">{subtitle}</p>}
+          </div>
+        </div>
+
+        {/* Scroll Controls */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => scroll("left")}
+            className="w-8 h-8 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all"
+            title="Scroll Left"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => scroll("right")}
+            className="w-8 h-8 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all"
+            title="Scroll Right"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Horizontal Carousel Container */}
+      <div
+        ref={scrollRef}
+        className="flex items-center gap-4 overflow-x-auto scrollbar-none pb-4 pt-1 scroll-smooth"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
+        {loading
+          ? [1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="min-w-[240px] max-w-[240px] flex-shrink-0">
+                <SkeletonProductCard />
+              </div>
+            ))
+          : products.map((product) => (
+              <div key={product.id} className="min-w-[240px] max-w-[240px] flex-shrink-0">
+                <ProductCard product={product} onQuickView={onQuickView} />
+              </div>
+            ))}
+      </div>
+    </section>
+  );
+}
 
 export default function CustomerHome() {
   const { user } = useAuth();
@@ -95,8 +166,11 @@ export default function CustomerHome() {
     }
   };
 
-  const flashSaleProducts = products.filter((p) => (p.discount_percentage || 0) > 0).slice(0, 5);
-  const featuredProducts = products.slice(0, 8);
+  const flashSaleProducts = products.filter((p) => (p.discount_percentage || 0) > 0).slice(0, 8);
+  const trendingProducts = products.filter((p) => (p.rating || 0) >= 4.7).slice(0, 10);
+  const bestSellers = [...products].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 10);
+  const newArrivals = [...products].reverse().slice(0, 10);
+  const recommendedProducts = products.slice(5, 15);
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-16">
@@ -195,50 +269,25 @@ export default function CustomerHome() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 pt-10">
         
-        {/* Flash Sale Deals Section */}
-        <section className="bg-white border border-slate-200/80 rounded-[24px] p-6 md:p-8 shadow-sm">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-rose-50 text-rose-600 rounded-2xl">
-                <Flame className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Flash Deals</h2>
-                  <span className="text-xs font-bold bg-rose-100 text-rose-700 px-2.5 py-0.5 rounded-md">Live Sale</span>
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5">Huge savings on top selected items. Ends soon!</p>
-              </div>
-            </div>
+        {/* Flash Sale Deals Section (Horizontal Carousel) */}
+        <HorizontalProductRow
+          title="Flash Deals of the Day"
+          subtitle="Huge savings on top selected items. Ends soon!"
+          icon={Flame}
+          products={flashSaleProducts}
+          loading={loading}
+          onQuickView={(p) => setQuickViewProduct(p)}
+        />
 
-            {/* Countdown Timer */}
-            <div className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl shadow-sm font-mono text-xs">
-              <Clock className="w-4 h-4 text-amber-400 mr-1" />
-              <span className="font-extrabold text-sm">{String(timeLeft.hours).padStart(2, "0")}</span>:
-              <span className="font-extrabold text-sm">{String(timeLeft.minutes).padStart(2, "0")}</span>:
-              <span className="font-extrabold text-sm">{String(timeLeft.seconds).padStart(2, "0")}</span>
-            </div>
-          </div>
-
-          {/* Flash Sale Products Grid */}
-          {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <SkeletonProductCard key={i} />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {flashSaleProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onQuickView={(p) => setQuickViewProduct(p)}
-                />
-              ))}
-            </div>
-          )}
-        </section>
+        {/* Recommended For You (Horizontal Carousel) */}
+        <HorizontalProductRow
+          title="Recommended For You"
+          subtitle="Handpicked items based on your browsing preferences"
+          icon={ThumbsUp}
+          products={recommendedProducts}
+          loading={loading}
+          onQuickView={(p) => setQuickViewProduct(p)}
+        />
 
         {/* Top Categories Grid */}
         <section className="space-y-6">
@@ -267,36 +316,35 @@ export default function CustomerHome() {
           </div>
         </section>
 
-        {/* Featured Products */}
-        <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Featured Marketplace Items</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Handpicked premium products with top customer ratings</p>
-            </div>
-            <Link to="/search" className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-              Browse Catalog <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
+        {/* Trending Products (Horizontal Carousel) */}
+        <HorizontalProductRow
+          title="Trending Products"
+          subtitle="Products with massive customer demand this week"
+          icon={TrendingUp}
+          products={trendingProducts}
+          loading={loading}
+          onQuickView={(p) => setQuickViewProduct(p)}
+        />
 
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <SkeletonProductCard key={i} />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
-              {featuredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onQuickView={(p) => setQuickViewProduct(p)}
-                />
-              ))}
-            </div>
-          )}
-        </section>
+        {/* Best Sellers (Horizontal Carousel) */}
+        <HorizontalProductRow
+          title="Marketplace Best Sellers"
+          subtitle="Top rated products with certified 5-star customer reviews"
+          icon={Award}
+          products={bestSellers}
+          loading={loading}
+          onQuickView={(p) => setQuickViewProduct(p)}
+        />
+
+        {/* New Arrivals (Horizontal Carousel) */}
+        <HorizontalProductRow
+          title="New Arrivals"
+          subtitle="Fresh items added to our marketplace catalog"
+          icon={Sparkle}
+          products={newArrivals}
+          loading={loading}
+          onQuickView={(p) => setQuickViewProduct(p)}
+        />
 
         {/* Popular Brands Showcase */}
         <section className="bg-white border border-slate-200/80 rounded-[24px] p-8 shadow-sm space-y-4">

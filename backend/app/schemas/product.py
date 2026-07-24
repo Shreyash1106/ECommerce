@@ -29,6 +29,8 @@ class ProductBase(BaseModel):
 
 class ProductCreate(ProductBase):
     category_id: Optional[int] = None
+    image_url: Optional[str] = Field(None, max_length=1024)
+    stock: Optional[int] = Field(0, ge=0)
 
 
 class ProductUpdate(BaseModel):
@@ -39,6 +41,12 @@ class ProductUpdate(BaseModel):
     rating: Optional[float] = Field(None, ge=0, le=5)
     discount_percentage: Optional[float] = Field(None, ge=0, le=100)
     category_id: Optional[int] = None
+    image_url: Optional[str] = Field(None, max_length=1024)
+    color: Optional[str] = Field(None, max_length=100)
+    size: Optional[str] = Field(None, max_length=50)
+    material: Optional[str] = Field(None, max_length=100)
+    stock: Optional[int] = Field(None, ge=0)
+
 
 
 class ProductResponse(ProductBase):
@@ -46,6 +54,7 @@ class ProductResponse(ProductBase):
     created_at: datetime
     category_id: Optional[int] = None
     image_url: Optional[str] = None
+    is_approved: Optional[bool] = True
     category: Optional[CategoryInfo] = None
     inventory: Optional[InventoryInfo] = None
     color: Optional[str] = None

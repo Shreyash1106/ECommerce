@@ -1,11 +1,11 @@
-from typing import List
-from fastapi import APIRouter, Depends, status, File, UploadFile, Query, Path, HTTPException
+from typing import List, Optional
+from fastapi import APIRouter, Depends, status, Query, Path, HTTPException
 from sqlalchemy.orm import Session
 
 from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse, CategoryInfo
 from app.services import product_service
 from app.database.session import get_db
-from app.core.security import get_current_user, get_current_vendor_or_admin_user
+from app.core.security import get_current_vendor_or_admin_user
 from app.models.user import User
 from app.models.category import Category
 
@@ -37,11 +37,31 @@ def create_product(
 def list_products(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
+    q: Optional[str] = Query(None),
+    category_id: Optional[int] = Query(None),
+    brand: Optional[str] = Query(None),
+    min_price: Optional[float] = Query(None),
+    max_price: Optional[float] = Query(None),
+    min_rating: Optional[float] = Query(None),
+    in_stock: Optional[bool] = Query(None),
+    sort_by: Optional[str] = Query("created_at"),
     db: Session = Depends(get_db)
 ):
-    """Get all products with pagination."""
+    """Get all products with filtering, search, and sorting."""
     try:
-        return product_service.get_products(db, skip=skip, limit=limit)
+        return product_service.get_products(
+            db,
+            skip=skip,
+            limit=limit,
+            q=q,
+            category_id=category_id,
+            brand=brand,
+            min_price=min_price,
+            max_price=max_price,
+            min_rating=min_rating,
+            in_stock=in_stock,
+            sort_by=sort_by
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -88,18 +108,19 @@ def delete_product(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.post("/{product_id}/upload-image")
-def upload_product_image(
+@router.put("/{product_id}/approve", response_model=ProductResponse)
+def approve_product(
     product_id: int = Path(..., gt=0),
-    file: UploadFile = File(...),
+    is_approved: bool = Query(True),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_vendor_or_admin_user)
 ):
-    """Upload product image (admin/vendor only)."""
+    """Approve or reject a vendor product (admin/vendor)."""
     try:
-        content = file.file.read()
-        return product_service.upload_product_image(db, product_id, file.filename, content)
+        return product_service.approve_product(db, product_id, is_approved=is_approved)
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+

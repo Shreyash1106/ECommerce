@@ -11,6 +11,13 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=8)
     role: Literal["customer", "vendor"] = Field(default="customer")
 
+    @model_validator(mode="after")
+    def validate_password_strength(cls, values):
+        pwd = values.password
+        if pwd and not any(char.isdigit() for char in pwd):
+            raise ValueError("Password must contain at least one digit.")
+        return values
+
 class UserUpdate(BaseModel):
     first_name: Optional[str] = Field(None, min_length=1, max_length=100)
     last_name: Optional[str] = Field(None, min_length=1, max_length=100)
